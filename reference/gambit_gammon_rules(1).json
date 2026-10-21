@@ -1,0 +1,249 @@
+{
+  "game_name": "Gambit Gammon",
+  "version": "0.2 (with Jokers)",
+  "objective": "Bear off all checkers first. Standard backgammon win condition with card-powered abilities.",
+  "global_rules": {
+    "no_countering": true,
+    "one_power_per_turn": true,
+    "river_refresh": "end_of_turn",
+    "movement_validation_order": [
+      "apply_power_modifiers",
+      "validate_backgammon_move_rules"
+    ]
+  },
+  "setup": {
+    "board": {
+      "points": 24,
+      "has_bar": true,
+      "has_bear_off": true,
+      "start_positions": "standard_backgammon"
+    },
+    "players": 2,
+    "checkers_per_player": 15,
+    "dice": {
+      "count": 2,
+      "sides": 6
+    },
+    "hand": {
+      "starting_cards": 5,
+      "max_size": 7
+    },
+    "streak_tracking": {
+      "doubles_streak_initial": 0,
+      "uses_per_player": 1
+    }
+  },
+  "deck": {
+    "cards": "standard_52_plus_2_jokers",
+    "jokers": 2,
+    "shuffle_on_empty_discard": true
+  },
+  "turn_structure": [
+    "roll_dice",
+    "apply_card_draw_triggers",
+    "optionally_play_one_power",
+    "move_checkers",
+    "update_doubles_streak_and_award_powers",
+    "discard_played_cards",
+    "end_turn_cleanup"
+  ],
+  "card_acquisition": [
+    {
+      "trigger": "roll_doubles",
+      "effect": [
+        {
+          "draw": 2
+        }
+      ]
+    },
+    {
+      "trigger": "hit_opponent_checker",
+      "effect": [
+        {
+          "current_player_draw": 1
+        },
+        {
+          "opponent_random_discard": 1
+        }
+      ]
+    },
+    {
+      "trigger": "roll_6_and_1",
+      "effect": [
+        {
+          "discard": 1
+        },
+        {
+          "draw": 2
+        }
+      ],
+      "optional": true
+    },
+    {
+      "trigger": "doubles_streak_bonus",
+      "effect": "see_doubles_streak_powers_section"
+    }
+  ],
+  "poker_powers": {
+    "constraints": {
+      "max_powers_per_turn": 1,
+      "discard_played_cards_timing": "end_of_turn"
+    },
+    "hands": [
+      {
+        "name": "High Card",
+        "note": "J, Q, K, A only",
+        "power": "High Card Boost",
+        "logic": "Select exactly one die and add a value based on the face card used (J=+1, Q=+2, K=+3, A=+4). New die value must be between 1 and 12 inclusive. Does not create an extra die; modification must be used as part of a continuous move.",
+        "activation": [
+          "must_hold_card_in_hand",
+          "declare_before_finalising_moves"
+        ]
+      },
+      {
+        "name": "One Pair",
+        "power": "Pair Reroll",
+        "logic": "Select one of the two dice and reroll it once.",
+        "activation": [
+          "declare_before_moving_any_checker"
+        ]
+      },
+      {
+        "name": "Two Pair",
+        "power": "Reverse Run",
+        "logic": "Select one of your checkers; for this move only, it may move in the opposite direction.",
+        "activation": [
+          "declare_before_moving_any_checker"
+        ]
+      },
+      {
+        "name": "Three of a Kind",
+        "power": "Double Reverse",
+        "logic": "For this turn only, moves may be made in reverse direction using both dice.",
+        "activation": [
+          "declare_before_moving_any_checker"
+        ]
+      },
+      {
+        "name": "Straight",
+        "power": "Full Reroll",
+        "logic": "Choose one: reroll both dice OR force opponent to reroll both dice on their next roll.",
+        "activation": [
+          "declare_before_any_moves"
+        ]
+      },
+      {
+        "name": "Flush",
+        "power": "Shield Point",
+        "logic": "Choose one of your checkers and mark it invincible for one move. If you stack another of your checkers onto that point at any time before the shield expires, the invincibility is immediately removed.",
+        "activation": [
+          "declare_before_opponent_rolls_next"
+        ],
+        "expiry": "end_of_your_next_turn_or_on_self_stack"
+      },
+      {
+        "name": "Full House",
+        "power": "Swap Points",
+        "logic": "Swap the positions of any two of your checkers anywhere on the board.",
+        "activation": [
+          "declare_before_moving_any_checker"
+        ]
+      },
+      {
+        "name": "Four of a Kind",
+        "power": "Wild Die",
+        "logic": "Set one die to any value from 1 to 6 for the current roll.",
+        "activation": [
+          "declare_before_moving_any_checker"
+        ]
+      },
+      {
+        "name": "Straight Flush",
+        "power": "Perfect Roll",
+        "logic": "Set both dice to any values 1\u20136 for this turn.",
+        "activation": [
+          "declare_before_moving_any_checker"
+        ]
+      },
+      {
+        "name": "Royal Flush",
+        "power": "Double Turn",
+        "logic": "After finishing the current turn, the player immediately takes an additional full turn.",
+        "activation": [
+          "declare_before_ending_turn"
+        ]
+      }
+    ],
+    "jokers": {
+      "count_in_deck": 2,
+      "abilities": [
+        {
+          "name": "Wild Card Substitution",
+          "logic": "In hand evaluation, a Joker can represent any single card value/suit that results in the highest-ranked possible poker hand."
+        },
+        {
+          "name": "Bar Entry Override",
+          "logic": "When the player has at least one checker on the bar, they may play a Joker to enter one checker onto the lowest-numbered open point in the opponent's home board without rolling. If no legal entry point exists, prevent play and prompt the user (no effect).",
+          "constraints": [
+            "cannot_bear_off_with_joker",
+            "consumes_turn_movement_context"
+          ]
+        }
+      ]
+    }
+  },
+  "doubles_streak_powers": {
+    "update_rule": {
+      "on_doubles": "increment",
+      "on_no_doubles": "reset_to_zero"
+    },
+    "levels": [
+      {
+        "streak": 2,
+        "effect": "Double Value Target",
+        "type": "permanent",
+        "logic": "Mark one opponent checker as target_checker; whenever you hit it, draw +1 additional card."
+      },
+      {
+        "streak": 3,
+        "effect": "Omni-Move Piece",
+        "type": "permanent",
+        "logic": "Choose one of your checkers; set omni_move=True allowing movement in any direction permanently."
+      },
+      {
+        "streak": 4,
+        "effect": "Mass Card Refresh",
+        "type": "one_off",
+        "logic": "Discard your entire hand and draw 7 new cards immediately."
+      },
+      {
+        "streak": 5,
+        "effect": "Invincible Piece",
+        "type": "permanent",
+        "logic": "Choose one checker; set invincible=True permanently."
+      },
+      {
+        "streak": 6,
+        "effect": "Rampage Piece",
+        "type": "permanent",
+        "logic": "Choose one checker; when it hits an opponent checker, send that checker to the bar and draw +2 cards."
+      }
+    ]
+  },
+  "end_of_turn": {
+    "discard_played_cards": true,
+    "reshuffle_when_deck_empty": true,
+    "clear_temporary_flags": [
+      "one_move_invincibility",
+      "pending_reroll_modifiers"
+    ]
+  },
+  "win_condition": "first_to_bear_off_all_checkers",
+  "ui_requirements": [
+    "display_current_dice",
+    "display_hand_and_detect_best_poker_hands",
+    "allow_play_of_one_power_per_turn",
+    "show_doubles_streak_and_available_bonuses",
+    "indicate_temporary_effects_on_board"
+  ]
+}
