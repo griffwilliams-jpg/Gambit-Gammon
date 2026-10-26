@@ -129,6 +129,25 @@ describe('roll and movement Jinn', () => {
     expect(getLegalActions(after).some((a) => a.type === 'move-checker' && a.reverse)).toBe(false);
   });
 
+  it('resolves Sirocco and Rakhim draws in slot order after a backward hit', () => {
+    const base = scenario({ player: 'white', dice: [3, 1], white: { 10: 1, 20: 1 }, black: { 13: 1, 1: 2 } });
+    const hitter = base.checkers.find((c) => c.owner === 'white' && c.location.kind === 'point' && c.location.point === 10)!.id;
+    const state = scenario({
+      player: 'white',
+      dice: [3, 1],
+      white: { 10: 1, 20: 1 },
+      black: { 13: 1, 1: 2 },
+      hands: { white: ['5S', '5H', '5C'] },
+      jinn: { white: ['sirocco', { id: 'rakhim', activeFromTurn: 1, target: hitter }] },
+    });
+    const [capture, siroccoCard, rakhimCard] = state.deck;
+    let after = apply(state, find(state, (a) => a.type === 'play-power' && a.params.power === 'three-of-a-kind'));
+    after = apply(after, find(after, (a) => a.type === 'move-checker' && a.checkerId === hitter && a.to === 13));
+    expect(after.players.white.hand).toEqual([capture, siroccoCard, rakhimCard]);
+    // The capture card and Rakhim's extra card are locked; Sirocco's is not.
+    expect(after.players.white.lockedCards).toEqual([capture, rakhimCard]);
+  });
+
   it('Sirocco draws a card on the first backward move each turn', () => {
     const state = scenario({
       player: 'white',

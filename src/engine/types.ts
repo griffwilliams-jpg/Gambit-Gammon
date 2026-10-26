@@ -259,8 +259,8 @@ export type GameEvent =
   | { readonly type: 'jinn-equipped'; readonly player: PlayerId; readonly jinn: JinnId; readonly slot: number; readonly replaced: JinnId | null }
   | { readonly type: 'jinn-released'; readonly player: PlayerId; readonly jinn: JinnId }
   | { readonly type: 'lamp-empty'; readonly player: PlayerId }
-  | { readonly type: 'bazaar-opened'; readonly player: PlayerId; readonly stock: readonly LampType[] }
-  | { readonly type: 'bazaar-refreshed'; readonly player: PlayerId; readonly paid: number; readonly stock: readonly LampType[] }
+  | { readonly type: 'bazaar-opened'; readonly player: PlayerId }
+  | { readonly type: 'bazaar-refreshed'; readonly player: PlayerId; readonly paid: number }
   | { readonly type: 'lamp-bought'; readonly player: PlayerId; readonly lamp: LampType; readonly opensAs: LampType; readonly price: number; readonly upgraded: boolean; readonly discounted: boolean }
   | { readonly type: 'bazaar-closed'; readonly player: PlayerId }
   | { readonly type: 'dice-unusable'; readonly player: PlayerId; readonly dice: readonly number[] }
