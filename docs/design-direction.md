@@ -18,7 +18,7 @@ The Bazaar is the current game's magical marketplace, not a conventional shop sc
 
 Present prices, balance, pending visit timing and the exact benefits available before a purchase. Make spending/saving and replacement/release choices clear. Reveal Jinn with personality and visible rarity; do not confuse a lamp type with the rarity actually revealed. Explain why an upgrade or discount was consumed.
 
-Keep visits brief and optional where the eventual visit rules permit; preview the approach to a visit from the board. Precisely when shopping interrupts play remains a rule decision, not an animation choice. A refresh control must not be designed around an invented shop inventory; agree what changes first.
+Show progress towards visits after own turns 3, 6, 9 and so on, including completed bonus and blocked turns. Present three mystery-lamp offers with visible lamp types, prices and odds. A refresh changes those available lamp types; its cost and treatment of sold offers are still being specified. Royal Lamps show 75% Uncommon / 25% Legendary. Keep the remaining cleanup/reveal/handover ordering a rule decision rather than allowing animation timing to decide it.
 
 No visual mock-up, asset set, animation or game UI is implemented by this documentation update. Griff reviews the art direction before full asset production.
 

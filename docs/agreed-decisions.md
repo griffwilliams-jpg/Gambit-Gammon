@@ -11,13 +11,26 @@ Read current rules before older sources. Unresolved items in [open-decisions.md]
 Griff initially supplied a v0.4 economy experiment, then directed that existing documents be updated and finally instructed: **“no just make this the rules of the game”.** That final direction promotes the Bazaar to current rules rather than leaving it as an optional experimental replacement. It does not approve unspecified values, new Jinn, game code or deployment.
 
 - Current hit rewards: hitter +1 Dinar, hit player +2 Dinars, alongside the original hit/bar/card consequences.
-- Bazaar every three personal turns; Copper 4, Enchanted 7, Royal 12 Dinars. Copper and Enchanted retain existing standard/Enchanted rarity weights. Royal's rare-tier definition and weights remain undecided.
+- Bazaar after completed own turns 3, 6, 9 and so on; completed bonus and blocked turns count. Each visit has three randomly stocked mystery lamps; refreshing changes the available lamp types. Copper costs 4, Enchanted 7 and Royal 12 Dinars. Copper and Enchanted keep their existing rarity weights; Royal is 75% Uncommon and 25% Legendary, with no Common outcomes.
 - Keep the free starting lamp, three equipped Jinn, existing twelve-Jinn roster, duplicate restrictions and once-per-match tracking.
-- Replace doubles' additional free lamps: two cumulative qualifying doubles give a free Bazaar refresh; two consecutive qualifying doubles upgrade the next purchased Copper Lamp; three consecutive qualifying doubles give a substantial next-lamp discount.
-- The shop stock/refresh mechanism, benefit stacking/expiry/consumption and discount details must be defined before implementation.
+- Replace doubles' additional free lamps: two cumulative qualifying doubles give a free Bazaar refresh; two consecutive qualifying doubles upgrade the next purchased Copper Lamp; three consecutive qualifying doubles give 3 Dinars off the next lamp, with a minimum final price of 1 Dinar.
+- Stock-generation probabilities, refresh price and sold-slot behaviour, benefit stacking/expiry/consumption and the exact end-turn queue must be defined before implementation. Do not reopen the already selected three offers, post-turn cadence, Royal weights or 3-Dinar discount as though no choice was made.
 - Economy A (+1/+1) and C (+1/+3) remain test configurations. Economy B (+1/+2) is current. Do not add anti-farming restrictions or economy-focused Jinn without reviewing evidence and agreeing changes.
 - Keep v0.3 as a historical simulation control, not the live default. Preserve the original v0.2 reference files byte-for-byte.
 - This request changes documentation only; no game engine, simulations, purchases or Bazaar UI have been implemented.
+
+## 26 October 2026: Bazaar details selected
+
+Griff explicitly selected the following options during the rules discussion:
+
+| Topic | Accepted choice |
+| --- | --- |
+| Stock model | Three randomly stocked mystery lamps per visit; refreshing changes the available lamp types. |
+| Visit timing | After own turns 3, 6, 9 and so on; completed bonus turns and blocked turns count. |
+| Royal odds | 75% Uncommon, 25% Legendary; no Common Jinn. Provisional balance values. |
+| Three-streak discount | 3 Dinars off the next lamp purchase, minimum final price 1 Dinar. Provisional balance values. |
+
+Only these choices are resolved by this decision. Stock weights/guarantees, paid-refresh cost, purchase/restocking behaviour and benefit stacking/expiry remain open. The current documentation is ahead of the initial Claude audit baseline at commit e8c180f; an audit of that frozen commit must account for this later decision.
 
 ## Retained from the approved v0.3 development-planning session
 

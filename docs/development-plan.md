@@ -4,6 +4,8 @@
 
 The main rules are [v0.4 with the Jinn Bazaar](rules.md), promoted by Griff on 26 October 2026. Economy B (+1 Dinar for hitting, +2 for being hit) is the provisional default. Historical v0.3 is the control for later comparisons, not an alternative current default.
 
+Royal Lamps currently use 75% Uncommon / 25% Legendary odds. Each visit stocks three random mystery lamps; the exact stock weights and refresh/purchase semantics are still to be agreed. The Royal weights and 3-Dinar next-lamp discount are provisional parameters to test, not unmade decisions.
+
 The repository contains documentation and reserved directories. No game engine, Bazaar code, AI benchmark, UI prototype or balance simulations have been completed. This change updates existing documents only. Resolve [remaining shop specifications](open-decisions.md) before implementing the economy.
 
 ## Architecture retained from the approved development plan
@@ -33,9 +35,9 @@ These are design hypotheses, not measured improvements.
 2. **Positive-sum money creation:** every hit creates 3 Dinars under B (2 under A and 4 under C). A/B/C therefore change total money supply as well as compensation for risk. Report both effects rather than attributing all differences to risk preference.
 3. **Mutual prolonging:** both players may benefit from a long capture loop. Test whether a rational opponent can refuse an avoidable hit or race ahead. Agents must obey compulsory dice usage and cannot pass a legal required move just to optimise the economy.
 4. **Indirect card/Jinn amplification:** Hadi, Rakhim and Basim can reward captures without directly awarding Dinars. Extra cards can create more reverse moves, hits or turns. Qamar, Sahira and Mazin may alter high-power frequency. Log the full chain, not just Dinars credited.
-5. **A refresh without a shop model:** unlimited fixed-price lamp types leave nothing useful to refresh. Agree what is stocked and regenerated before implementing a refresh reward. Mystery Jinn content does not by itself imply hidden pre-generated offers or permission to reroll a revealed purchase.
-6. **Purchase-benefit ambiguity:** the Copper upgrade and three-streak discount do not define cost, eligibility, stacking, expiry or consumption. Do not import the old free-lamp upgrade behaviour, invent a discount or apply benefits retroactively.
-7. **Timing and full slots:** a player may earn enough money while the Bazaar is closed, lose before the next visit, or find that a fourth lamp has little replacement value. Extra-turn shopping cadence and forced-pass turns affect access. Measure the opportunity cost of saving, buying and releasing.
+5. **Rotating stock needs generation rules:** each visit now offers three random mystery lamps and refreshes change the offered lamp types. Define generation weights, tier guarantees and sold-slot handling before implementation. Mystery Jinn content does not imply permission to reroll a revealed purchase.
+6. **Purchase-benefit ordering:** the three-streak discount is now 3 Dinars off the next lamp, minimum final price 1. Define its stacking, expiry and consumption order with the Copper upgrade. Do not import the old free-lamp upgrade behaviour or apply benefits retroactively.
+7. **Timing and full slots:** a player may earn enough money while the Bazaar is closed, lose before the next visit, or find that a fourth lamp has little replacement value. Visits now follow completed own turns 3/6/9, including bonus and blocked turns. Measure how that access pattern affects saving, buying and releasing, and specify the remaining end-turn event order.
 8. **Collection is not exclusively passive:** the retained roster includes activated and once-per-match abilities. The Bazaar must not silently convert all twelve Jinn to passive-only effects or reset spent abilities through purchases.
 
 Illustrative arithmetic, not a simulation result: under B, two hits received award 4 Dinars, enough for a base-price Copper Lamp; four hits made award the same amount. That alone says nothing about which position wins, whether the next visit arrives in time or whether the replacement Jinn helps.

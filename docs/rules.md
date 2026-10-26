@@ -19,7 +19,7 @@ Use normal blocked-point, hit, bar-priority and bearing-off rules. Use both dice
 
 Re-enter barred checkers normally before moving other checkers. No reverse entry, backwards bearing off or backwards movement off the board. A player who has borne off their first checker cannot subsequently use backwards movement to take a checker out of the home board. Being hit still requires normal re-entry and return home before bearing off resumes.
 
-The inherited turn phases are: beginning-of-turn Jinn choices; initial roll and rewards; optional pre-movement poker power; checker movement; eligible Royal Flush declaration; played-card discard and end-turn effects; lamp opening/equipment; next turn. The Bazaar needs a precise position in this sequence before implementation; its every-third-personal-turn cadence does not yet settle whether the visit precedes or follows movement.
+The inherited turn phases are: beginning-of-turn Jinn choices; initial roll and rewards; optional pre-movement poker power; checker movement; eligible Royal Flush declaration; played-card discard and end-turn effects; lamp opening/equipment; next turn. Eligible Bazaar visits occur after completed own turns 3, 6, 9 and so on, including completed bonus turns and blocked turns. Exact ordering relative to end-turn cleanup, reveals/equipment and handover still needs formalisation; the visit does not precede checker movement.
 
 Stop on victory. Do not insert a post-victory purchase or additional turn. Game-state changes come from validated actions, never from animation completion.
 
@@ -63,19 +63,21 @@ The +1/+2 setting is **Economy B**, the current provisional default. Economies A
 
 ## 5. The Jinn Bazaar
 
-The Bazaar opens every **three personal turns**. Players may buy lamps or save their Dinars for a later visit. The precise visit phase, treatment of forced-pass and bonus turns, stock, refreshes and purchase limits are unresolved; do not implement a guessed shop model.
+The Bazaar opens **after completed own turns 3, 6, 9 and so on**. Completed bonus turns and blocked turns count towards this personal-turn clock. Players may buy lamps or save their Dinars for a later visit.
+
+Each visit stocks **three randomly selected mystery-lamp offers**. Their lamp types are shown before purchase; their Jinn contents remain a mystery until revealed. A refresh changes the lamp types available. Stock probabilities, guarantees/duplicates, private versus shared stock, refresh cost, treatment of purchased slots and purchase limits remain unresolved; do not invent these details.
 
 | Lamp | Base cost | Rarity distribution |
 | --- | ---: | --- |
 | Copper | 4 Dinars | 70% Common, 25% Uncommon, 5% Legendary |
 | Enchanted | 7 Dinars | 40% Common, 45% Uncommon, 15% Legendary |
-| Royal | 12 Dinars | Guaranteed rare-tier outcome; the allowed tier(s) and exact probabilities still require a decision. Do not interpret this as guaranteed Legendary. |
+| Royal | 12 Dinars | 0% Common, 75% Uncommon, 25% Legendary |
 
 These prices and probabilities are starting balance parameters, not measured fair values. A purchase spends Dinars and reveals a random Jinn according to the lamp's resolved probabilities; owning three Jinn does not remove the replacement-or-release decision. Whether purchases resolve immediately during a visit or later in turn cleanup must be settled with Bazaar timing.
 
-Use uniform selection within an eligible rarity and renormalise over remaining eligible rarities if a tier is exhausted, as already approved for v0.3. The Royal distribution must be decided first; a fallback must not defeat its eventual rare-tier guarantee.
+Use uniform selection within an eligible rarity and renormalise over remaining eligible rarities if a tier is exhausted, as already approved for v0.3. Royal Lamps remain restricted to eligible Uncommon and Legendary Jinn; fallback never adds Common outcomes. The 75%/25% Royal distribution is an approved provisional balance value, not a measured fair price or strength.
 
-A refresh has no defined target yet. If every visit merely offers the same three fixed-price lamp types, refreshing the shop changes nothing. Stock composition and what a refresh regenerates must be agreed before awarding or spending a functional refresh.
+A refresh regenerates the offered lamp types. This is a rotating stock rather than a fixed menu with nothing to refresh. Its exact generation weights and handling of sold slots must be agreed before implementation.
 
 ## 6. Natural doubles now improve Bazaar opportunities
 
@@ -85,7 +87,7 @@ Keep initial-roll provenance separate from effective movement dice. Qualifying n
 | --- | --- |
 | Two cumulative qualifying natural doubles | Award one free Bazaar refresh. |
 | Two consecutive qualifying natural doubles | Upgrade the next purchased Copper Lamp to Enchanted. |
-| Three consecutive qualifying natural doubles | Award a substantial discount on the next lamp purchase; amount and eligible lamps are still undefined. |
+| Three consecutive qualifying natural doubles | Award 3 Dinars off the next lamp purchase, with a minimum final price of 1 Dinar. |
 
 **There are no additional free lamps from doubles in v0.4.** The free setup lamp remains. The old automatic permanent streak powers also remain replaced by collectible Jinn.
 
@@ -93,7 +95,9 @@ The existing cumulative-versus-streak distinction is retained: a non-double brea
 
 Do not copy v0.3's carried free-lamp Enchanted-upgrade rule into v0.4: the new benefit concerns a **purchased Copper Lamp**. Its price, stacking, expiry, consumption, interaction with discounts, and interaction with previously bought lamps still need explicit decisions. There is no authority to reroll an already revealed Jinn or apply a retroactive upgrade without such a decision.
 
-Extra turns use the normal initial-roll reward rule; their contribution to the Bazaar visit clock is a separate unresolved question. Pair Reroll, Full Reroll, opponent-forced rerolls and values set by powers cannot farm extra Bazaar reward events.
+Completed extra turns count towards the Bazaar visit clock and use the normal initial-roll reward rule. Pair Reroll, Full Reroll, opponent-forced rerolls and values set by powers cannot farm extra Bazaar reward events.
+
+The three-streak discount applies to the next lamp purchase, with a final price floor of 1 Dinar. Without other benefits, the base-price examples are Copper 4 to 1, Enchanted 7 to 4 and Royal 12 to 9. The amount and floor are approved provisional balance values. Discount stacking, expiry, consumption order and interactions with the Copper upgrade remain decisions to resolve.
 
 ## 7. Jinn collection and the retained roster
 
