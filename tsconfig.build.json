@@ -7,5 +7,5 @@
     "sourceMap": true,
     "types": []
   },
-  "include": ["src/engine"]
+  "include": ["src/engine", "src/ai"]
 }
