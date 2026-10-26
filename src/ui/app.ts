@@ -56,6 +56,15 @@ export class App {
   ) {
     board.setHandler((spot) => this.onSpot(spot));
     this.renderMenu();
+    // `?seed=…&mode=hot-seat|vs-ai&side=white|black` starts a reproducible game (tests, bug reports).
+    const params = new URLSearchParams(location.search);
+    const seed = params.get('seed');
+    if (seed) {
+      const mode: Mode = params.get('mode') === 'hot-seat' ? 'hot-seat' : 'vs-ai';
+      const side: PlayerId = params.get('side') === 'black' ? 'black' : 'white';
+      this.begin(mode, side, createGame({ seed }), [`New game from a fixed seed.`], seed);
+      return;
+    }
     const saved = localStorage.getItem(SAVE_KEY);
     if (saved) {
       try {
@@ -77,12 +86,12 @@ export class App {
     this.begin(mode, human, createGame({ seed }), ['New game. Each player rolls one die to decide who starts.']);
   }
 
-  private begin(mode: Mode, human: PlayerId, state: GameState, log: string[]): void {
+  private begin(mode: Mode, human: PlayerId, state: GameState, log: string[], botSeed = `${Date.now()}`): void {
     if (this.botTimer !== null) window.clearTimeout(this.botTimer);
     const bots: Partial<Record<PlayerId, Bot>> = {};
     if (mode === 'vs-ai') {
       const side: PlayerId = human === 'white' ? 'black' : 'white';
-      bots[side] = createBot(side, `${state.sequence}-${Date.now()}`);
+      bots[side] = createBot(side, botSeed);
     }
     this.session = { mode, human, state, bots, log, viewer: human, handover: false, selected: null, choices: null, powerGroup: null };
     this.afterChange();
@@ -116,13 +125,18 @@ export class App {
       s.handover = true;
     }
     this.render();
+    // At most one scheduled computer move; it re-checks the game when it fires,
+    // because the human may have acted in the meantime (e.g. both opening rolls).
+    if (this.botTimer !== null) window.clearTimeout(this.botTimer);
+    this.botTimer = null;
     const botSide = deciders.find((p) => s.bots[p]);
     if (botSide && s.state.phase.kind !== 'finished') {
       const delay = matchMedia('(prefers-reduced-motion: reduce)').matches ? 80 : 450;
       this.botTimer = window.setTimeout(() => {
         this.botTimer = null;
-        const bot = s.bots[botSide]!;
-        this.submit(chooseBotAction(bot, getObservation(s.state, botSide)));
+        if (this.session !== s) return;
+        const observation = getObservation(s.state, botSide);
+        if (observation.legalActions.length > 0) this.submit(chooseBotAction(s.bots[botSide]!, observation));
       }, delay);
     }
   }

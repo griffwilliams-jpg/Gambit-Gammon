@@ -18,14 +18,19 @@ import {
   type Rarity,
 } from '../engine/index.js';
 import { nextUint32, seedStream, type RngState } from '../engine/rng.js';
+import { planMove } from './planner.js';
+
+/** 'planner' searches whole turns; 'basic' picks each movement greedily. */
+export type BotLevel = 'basic' | 'planner';
 
 export interface Bot {
   readonly player: PlayerId;
+  readonly level: BotLevel;
   rng: RngState;
 }
 
-export function createBot(player: PlayerId, seed: string): Bot {
-  return { player, rng: seedStream(seed, `bot-${player}`) };
+export function createBot(player: PlayerId, seed: string, level: BotLevel = 'planner'): Bot {
+  return { player, level, rng: seedStream(seed, `bot-${player}`) };
 }
 
 export function chooseBotAction(bot: Bot, observation: Observation): GameAction {
@@ -93,6 +98,10 @@ function chooseMove(bot: Bot, observation: Observation): GameAction {
 
   const moves = actions.filter((a) => a.type === 'move-checker');
   const powers = actions.filter((a) => a.type === 'play-power');
+  if (moves.length === 0 && bot.level === 'planner') {
+    const planned = planMove(observation);
+    if (planned) return planned.action;
+  }
   if (moves.length === 0) {
     // Blocked: try to change the dice before giving up the turn.
     const order = ['straight-flush', 'four-of-a-kind', 'straight', 'pair', 'high-card'];
@@ -114,6 +123,10 @@ function chooseMove(bot: Bot, observation: Observation): GameAction {
     if (shield.type === 'play-power' && shield.params.power === 'flush' && threatOn(observation, shield.params.checkerId) >= 2) {
       return shield;
     }
+  }
+  if (bot.level === 'planner') {
+    const planned = planMove(observation);
+    if (planned) return planned.action;
   }
   return best(bot, moves, (a) => (a.type === 'move-checker' ? scoreAfterMove(observation, a) : 0));
 }

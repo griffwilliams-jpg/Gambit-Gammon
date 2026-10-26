@@ -18,7 +18,7 @@ npm install
 npm run dev
 ```
 
-Then open the address it prints (normally http://localhost:5173). Your game autosaves in the browser, and the menu can also download a save file and load it back.
+Then open the address it prints (normally http://localhost:5173). Adding `?seed=anything` to the address starts a reproducible game, which is useful for bug reports (`&mode=hot-seat` for two players, `&side=black` to play Onyx). Your game autosaves in the browser, and the menu can also download a save file and load it back.
 
 - **Moving:** click a highlighted checker, then a green destination. Every legal move is also listed as a button, so you can play entirely by keyboard.
 - **Powers:** your hand shows under the players. Poker powers appear as buttons before your first move; pick one, then pick how to use it.
@@ -36,20 +36,20 @@ That runs the type check, the tests and the build, stopping at the first failure
 | --- | --- |
 | `npm run typecheck` | Strict TypeScript check of the engine, computer player, interface and tests. |
 | `npm test` | Runs the Vitest suite once (about 100 tests, including 200 seeded random games and bot-vs-random games). |
+| `npm run test:e2e` | Playwright browser tests: loading, the opening, computer turns, clicking moves on the board, keyboard use, two-player handover, autosave and the Bazaar. Uses your installed Google Chrome; without Chrome, run `npx playwright install chromium` once and set `PW_BROWSER=bundled`. |
 | `npm run build` | Compiles the engine and computer player to `dist/` (with no DOM or Node types, so they can't depend on a browser), then builds the web game to `dist-web/`. |
 | `npm run preview` | Serves the built web game. |
 
 ## How it fits together
 
 - **`src/engine/`**: the rules, with no rendering. `createGame`, `getLegalActions`, `applyAction`, `getObservation`, save/load and replay. Every choice in a turn is an explicit decision answered by a legal action. Rejected or stale actions change neither the game nor its randomness. Dice, deck shuffles, forced discards, Bazaar stock and lamp contents each use their own seeded random stream. Saves and replays carry the ruleset version, and a v0.3 file is refused.
-- **`src/ai/`**: the computer opponent. It decides only from what its player can see, and its own randomness is kept apart from the game's. It beats a random player about 97% of the time; it is not a strong player.
+- **`src/ai/`**: the computer opponent. It decides only from what its player can see, and its own randomness is kept apart from the game's. It plans whole turns: it searches every legal sequence of moves for the dice using the engine's own rules, and plays a dice-changing or backward-move power only when the improvement is worth the cards. It beat the earlier move-by-move bot in 195 of 200 games. It is still not an expert player: it looks one turn ahead and doesn't weigh Dinars or the Bazaar.
 - **`src/ui/`**: Phaser 4.2.1 draws the board, and plain HTML panels handle every decision, the Bazaar, the hand and the event log.
 
 ### Known gaps
 
 - Placeholder art and no sound. The pixel-art Jinn, lamps and Bazaar merchant still need designing and approving.
-- No browser-level (Playwright) tests yet; the engine and computer player are tested, the interface was checked by hand.
-- The computer player is basic and does not plan whole turns.
+- The computer player looks one turn ahead and ignores the economy when moving.
 - Phone layouts, online play and the balance comparisons in the development plan are later work.
 
 ## Start here
