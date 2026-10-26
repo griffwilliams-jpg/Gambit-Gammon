@@ -71,7 +71,7 @@ describe('deterministic play, save/load and replay', () => {
 
   it('restores the random state, so the next roll matches', () => {
     let state = playOut(createGame({ seed: 'next-roll' }), 2, 30);
-    while (state.phase.kind !== 'awaiting-roll') state = playOut(state, 2, 1);
+    while (state.pending?.kind !== 'roll') state = playOut(state, 2, 1);
     const loaded = loadGame(saveGame(state));
     const roll = getLegalActions(state)[0]!;
     expect(apply(loaded, roll)).toEqual(apply(state, roll));

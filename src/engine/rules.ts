@@ -1,13 +1,13 @@
 /**
  * Versioned rules configuration.
  *
- * `RULES_V0_4` is the current ruleset (docs/rules.md). Only the backgammon
- * board, setup and opening contest are executed by this engine stage. The
- * economy and Bazaar values are recorded for ruleset identity and are
- * explicitly provisional balance parameters: the engine does not consume them
- * yet. Unresolved shop mechanics (docs/open-decisions.md B03–B10) are
- * deliberately absent rather than guessed.
+ * `RULES_V0_4` is the current ruleset (docs/rules.md, with Griff's B03–B10
+ * decisions in docs/agreed-decisions.md). Values under `economy`, `bazaar`
+ * and `lamps` are provisional balance parameters, not measured fair values.
+ * Economy A and C are comparison configurations only.
  */
+
+import type { LampType, RarityWeights } from './jinn.js';
 
 export const RULESET_ID = 'gambit-gammon' as const;
 export const CURRENT_RULES_VERSION = '0.4' as const;
@@ -20,32 +20,43 @@ export interface RulesConfig {
     readonly checkersPerPlayer: 15;
   };
   readonly cards: {
-    readonly startingHandSize: 5;
-    readonly maxHandSize: 7;
+    readonly startingHandSize: number;
+    readonly maxHandSize: number;
+    readonly naturalDoublesDraw: number;
+    /** Highest movement value a boosted ordinary die may reach. */
+    readonly maxBoostedDie: number;
   };
   readonly jinn: {
-    readonly freeStartingLamps: 1;
-    readonly equipSlots: 3;
+    readonly equipSlots: number;
+    /** Own turns Malik rests after use (use on turn 1, ready on turn 4). */
+    readonly malikRestTurns: number;
   };
-  /** Provisional balance values (Economy B). Not implemented in this stage. */
   readonly economy: {
     readonly status: 'provisional';
-    readonly label: 'B';
-    readonly startingDinars: 0;
-    readonly hitterDinars: 1;
-    readonly hitPlayerDinars: 2;
+    readonly label: 'A' | 'B' | 'C';
+    readonly startingDinars: number;
+    readonly hitterDinars: number;
+    readonly hitPlayerDinars: number;
   };
-  /** Provisional balance values. Not implemented in this stage. */
   readonly bazaar: {
     readonly status: 'provisional';
-    readonly visitEveryOwnTurns: 3;
-    readonly offersPerVisit: 3;
-    readonly guaranteedCopperOffers: 1;
-    readonly randomOfferWeights: { readonly copper: 60; readonly enchanted: 30; readonly royal: 10 };
-    readonly lampPrices: { readonly copper: 4; readonly enchanted: 7; readonly royal: 12 };
-    readonly paidRefreshPrice: 1;
-    readonly nextLampDiscount: 3;
-    readonly minimumDiscountedPrice: 1;
+    readonly visitEveryOwnTurns: number;
+    readonly offersPerVisit: number;
+    readonly guaranteedCopperOffers: number;
+    readonly randomOfferWeights: Readonly<Record<LampType, number>>;
+    readonly lampPrices: Readonly<Record<LampType, number>>;
+    readonly paidRefreshPrice: number;
+    readonly nextLampDiscount: number;
+    readonly minimumDiscountedPrice: number;
+  };
+  readonly lamps: {
+    readonly status: 'provisional';
+    readonly rarityWeights: Readonly<Record<LampType, RarityWeights>>;
+    /**
+     * The free setup lamp. The rules call it a "mystery lamp"; the original
+     * v0.3 decisions used standard-lamp odds, which match Copper.
+     */
+    readonly startingLamp: LampType;
   };
 }
 
@@ -53,8 +64,8 @@ export const RULES_V0_4: RulesConfig = deepFreeze({
   rulesetId: RULESET_ID,
   rulesVersion: CURRENT_RULES_VERSION,
   board: { points: 24, checkersPerPlayer: 15 },
-  cards: { startingHandSize: 5, maxHandSize: 7 },
-  jinn: { freeStartingLamps: 1, equipSlots: 3 },
+  cards: { startingHandSize: 5, maxHandSize: 7, naturalDoublesDraw: 2, maxBoostedDie: 10 },
+  jinn: { equipSlots: 3, malikRestTurns: 2 },
   economy: {
     status: 'provisional',
     label: 'B',
@@ -73,7 +84,22 @@ export const RULES_V0_4: RulesConfig = deepFreeze({
     nextLampDiscount: 3,
     minimumDiscountedPrice: 1,
   },
+  lamps: {
+    status: 'provisional',
+    rarityWeights: {
+      copper: { common: 70, uncommon: 25, legendary: 5 },
+      enchanted: { common: 40, uncommon: 45, legendary: 15 },
+      royal: { common: 0, uncommon: 75, legendary: 25 },
+    },
+    startingLamp: 'copper',
+  },
 });
+
+/** Comparison economies for balance testing; never the silent default. */
+export function withEconomy(rules: RulesConfig, label: 'A' | 'B' | 'C'): RulesConfig {
+  const hitPlayerDinars = { A: 1, B: 2, C: 3 }[label];
+  return deepFreeze({ ...rules, economy: { ...rules.economy, label, hitPlayerDinars } });
+}
 
 function deepFreeze<T>(value: T): T {
   if (value && typeof value === 'object') {

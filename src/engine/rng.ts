@@ -2,20 +2,27 @@
  * Seeded, serialisable gameplay randomness.
  *
  * sfc32 generator with a 128-bit state stored as four uint32 numbers, so the
- * full random state round-trips through JSON. Each gameplay stream (dice now;
- * deck, lamps and forced discards in later stages) is seeded independently
- * from the match seed and the stream name, so consuming one stream never
- * shifts another. Computer-player randomness must never use these streams.
+ * full random state round-trips through JSON. Each gameplay stream is seeded
+ * independently from the match seed and the stream name, so consuming one
+ * stream never shifts another. Computer-player randomness must never use these streams.
  */
 
 export type RngState = readonly [number, number, number, number];
 
-export type RngStreamName = 'dice';
+/**
+ * dice: all die rolls. deck: shuffles. discard: forced random discards.
+ * stock: Bazaar lamp-type offers. lamp: Jinn revealed from lamps.
+ */
+export type RngStreamName = 'dice' | 'deck' | 'discard' | 'stock' | 'lamp';
+export const RNG_STREAMS: readonly RngStreamName[] = ['dice', 'deck', 'discard', 'stock', 'lamp'];
 
 export type RngStreams = Readonly<Record<RngStreamName, RngState>>;
 
 export function seedStreams(seed: string): RngStreams {
-  return { dice: seedStream(seed, 'dice') };
+  return Object.fromEntries(RNG_STREAMS.map((name) => [name, seedStream(seed, name)])) as Record<
+    RngStreamName,
+    RngState
+  >;
 }
 
 export function seedStream(seed: string, stream: string): RngState {
@@ -36,15 +43,34 @@ export function nextUint32(state: RngState): { value: number; state: RngState } 
   return { value: t >>> 0, state: [a >>> 0, b >>> 0, c >>> 0, d >>> 0] };
 }
 
-/** Uniform integer in [1, sides], using rejection sampling to avoid modulo bias. */
-export function rollDie(state: RngState, sides = 6): { value: number; state: RngState } {
-  const limit = Math.floor(0x1_0000_0000 / sides) * sides;
+/** Uniform integer in [0, n), using rejection sampling to avoid modulo bias. */
+export function randomInt(state: RngState, n: number): { value: number; state: RngState } {
+  if (!Number.isInteger(n) || n <= 0) throw new Error(`randomInt needs a positive integer, got ${n}.`);
+  const limit = Math.floor(0x1_0000_0000 / n) * n;
   let current = state;
   for (;;) {
     const next = nextUint32(current);
     current = next.state;
-    if (next.value < limit) return { value: (next.value % sides) + 1, state: current };
+    if (next.value < limit) return { value: next.value % n, state: current };
   }
+}
+
+/** Uniform integer in [1, sides]. */
+export function rollDie(state: RngState, sides = 6): { value: number; state: RngState } {
+  const roll = randomInt(state, sides);
+  return { value: roll.value + 1, state: roll.state };
+}
+
+/** Fisher–Yates shuffle returning a new array. */
+export function shuffle<T>(items: readonly T[], state: RngState): { items: T[]; state: RngState } {
+  const result = [...items];
+  let current = state;
+  for (let i = result.length - 1; i > 0; i--) {
+    const pick = randomInt(current, i + 1);
+    current = pick.state;
+    [result[i], result[pick.value]] = [result[pick.value]!, result[i]!];
+  }
+  return { items: result, state: current };
 }
 
 /** cyrb128 string hash, producing four 32-bit words. */

@@ -36,7 +36,7 @@ describe('rejected actions change neither state nor randomness', () => {
   });
 
   it('rejects illegal moves, including blocked points, wrong dice and wrong checkers', () => {
-    const state = scenario({ player: 'white', dice: [3, 1], white: { 13: 2 }, black: { 10: 2, 1: 2 } });
+    const state = scenario({ player: 'white', dice: [3, 1], white: { 13: 2 }, black: { 10: 2, 1: 2 }, hands: { white: ['AS'] } });
     const base = { type: 'move-checker', player: 'white', sequence: state.sequence } as const;
     expectRejectedUnchanged(state, { ...base, checkerId: 'white-01', from: 13, to: 10, die: 3 }, 'illegal-action');
     expectRejectedUnchanged(state, { ...base, checkerId: 'white-01', from: 13, to: 11, die: 2 }, 'illegal-action');
@@ -44,6 +44,17 @@ describe('rejected actions change neither state nor randomness', () => {
     expectRejectedUnchanged(state, { ...base, checkerId: 'white-03', from: 13, to: 12, die: 1 }, 'illegal-action');
     expectRejectedUnchanged(state, { type: 'end-turn', player: 'white', sequence: state.sequence }, 'illegal-action');
     expectRejectedUnchanged(state, { type: 'roll-dice', player: 'white', sequence: state.sequence }, 'illegal-action');
+    // A power with a card the player does not hold, or a hand that does not qualify.
+    expectRejectedUnchanged(
+      state,
+      { type: 'play-power', player: 'white', sequence: state.sequence, cardIds: ['KS'], params: { power: 'high-card', die: 3, boost: 3 } },
+      'illegal-action',
+    );
+    expectRejectedUnchanged(
+      state,
+      { type: 'play-power', player: 'white', sequence: state.sequence, cardIds: ['AS'], params: { power: 'high-card', die: 3, boost: 3 } },
+      'illegal-action',
+    );
   });
 
   it('rejects malformed input without throwing', () => {
@@ -111,18 +122,23 @@ describe('rejected actions change neither state nor randomness', () => {
 });
 
 describe('observations', () => {
-  it('never exposes the gameplay seed or random state', () => {
+  it('never exposes the gameplay seed, random state, deck order or opponent hand', () => {
     const seed = 'very-secret-seed-1234';
     let state = createGame({ seed });
-    state = playOut(state, 3, 25);
+    state = playOut(state, 3, 60);
     for (const viewer of ['white', 'black'] as const) {
       const observation = getObservation(state, viewer);
       const text = JSON.stringify(observation);
       expect(text).not.toContain(seed);
       expect(observation).not.toHaveProperty('seed');
       expect(observation).not.toHaveProperty('rng');
-      for (const word of state.rng.dice) expect(text).not.toContain(String(word));
-      expect(observation.private).toEqual({});
+      expect(observation).not.toHaveProperty('deck');
+      for (const stream of Object.values(state.rng)) for (const word of stream) expect(text).not.toContain(String(word));
+      expect(observation.private.hand).toEqual(state.players[viewer].hand);
+      const opponent = viewer === 'white' ? 'black' : 'white';
+      for (const card of state.players[opponent].hand) expect(text).not.toContain(`"${card}"`);
+      for (const card of state.deck) expect(text).not.toContain(`"${card}"`);
+      expect(observation.players[opponent].handCount).toBe(state.players[opponent].hand.length);
     }
   });
 
@@ -131,6 +147,8 @@ describe('observations', () => {
     const observation = getObservation(state, 'black');
     expect(observation.legalActions.every((a) => a.player === 'black')).toBe(true);
     (observation.checkers as unknown as { location: unknown }[])[0]!.location = { kind: 'off' };
+    (observation.private.hand as string[]).length = 0;
     expect(state.checkers[0]!.location).toEqual({ kind: 'point', point: 24 });
+    expect(state.players.black.hand).toHaveLength(5);
   });
 });

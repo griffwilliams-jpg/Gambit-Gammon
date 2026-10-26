@@ -14,7 +14,7 @@ describe('compulsory dice use', () => {
     const state = scenario({ player: 'white', dice: [3, 4], white: { 9: 1 }, black: { 2: 2 } });
     expect(moveSummary(state)).toEqual(['9>5/4']);
     const after = apply(state, firstMove(state, 9, 5, 4));
-    expect(getLegalActions(after).map((a) => a.type)).toEqual(['end-turn']);
+    expect(moveSummary(after)).toEqual(['end-turn']);
   });
 
   it('allows the lower die when the higher die cannot be played at all', () => {
@@ -24,8 +24,7 @@ describe('compulsory dice use', () => {
 
   it('gives four movements for doubles and requires as many as possible', () => {
     let state = scenario({ player: 'white', dice: [2, 2], white: { 13: 2 }, black: { 7: 2 } });
-    if (state.phase.kind !== 'moving') throw new Error('Expected moving phase.');
-    expect(state.phase.dice.movementDice).toEqual([2, 2, 2, 2]);
+    expect(state.turn?.dice?.remaining).toEqual([2, 2, 2, 2]);
     // 13>11>9 is open; 9>7 is blocked, so each checker can move at most twice.
     for (let i = 0; i < 4; i++) {
       const action = getLegalActions(state).find((a) => a.type === 'move-checker');
@@ -40,13 +39,14 @@ describe('compulsory dice use', () => {
     const blocking = { 19: 2, 20: 2, 21: 2, 22: 2, 23: 2, 24: 2 };
     const state = scenario({ player: 'white', dice: [6, 3], white: { bar: 1, 13: 4 }, black: blocking });
     expect(moveSummary(state)).toEqual(['end-turn']);
-    const result = applyAction(state, getLegalActions(state)[0]!);
+    const result = applyAction(state, getLegalActions(state).find((a) => a.type === 'end-turn')!);
     if (!result.ok) throw new Error(result.message);
-    expect(result.events).toEqual([
+    expect(result.events.slice(0, 2)).toEqual([
       { type: 'dice-unusable', player: 'white', dice: [6, 3] },
       { type: 'turn-ended', player: 'white', ownTurnNumber: 1 },
     ]);
-    expect(result.state.phase).toEqual({ kind: 'awaiting-roll', player: 'black' });
+    expect(result.state.pending).toEqual({ kind: 'roll', player: 'black' });
+    expect(result.state.completedOwnTurns.white).toBe(1);
   });
 });
 
@@ -87,6 +87,7 @@ describe('bar, hits and bearing off', () => {
     if (!result.ok) throw new Error(result.message);
     expect(result.events.at(-1)).toEqual({ type: 'game-won', player: 'white' });
     expect(result.state.phase).toEqual({ kind: 'finished', winner: 'white' });
+    expect(result.state.pending).toBeNull();
     expect(getLegalActions(result.state)).toEqual([]);
   });
 
