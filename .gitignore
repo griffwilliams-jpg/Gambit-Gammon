@@ -3,3 +3,5 @@ dist/
 coverage/
 .DS_Store
 dist-web/
+test-results/
+playwright-report/

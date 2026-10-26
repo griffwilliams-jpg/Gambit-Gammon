@@ -141,6 +141,15 @@ export function applyStep(position: Position, step: Step): Position {
   return applyToNode({ position, context: PLAIN_CONTEXT }, step).position;
 }
 
+/** Applies a step and updates the power/Amira context it consumes (for planners). */
+export function applyStepInContext(
+  position: Position,
+  context: MoveContext,
+  step: Step,
+): { position: Position; context: MoveContext } {
+  return applyToNode({ position, context }, step);
+}
+
 function key(node: Node, remaining: readonly number[]): string {
   const { reverseAllowance, anyDirection, amiraAt, hasBorneOff } = node.context;
   return [
