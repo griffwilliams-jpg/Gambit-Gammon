@@ -1,3 +1,3 @@
-# Future tests
+# Tests
 
-Reserved for rules-engine tests and reproducible player simulations once implementation begins. No game tests or simulations have run.
+Vitest scenario tests and fast-check property tests for the rules engine. `simulation.test.ts` plays 200 seeded random games to completion and checks board invariants after every action. Run them with `npm test`.
