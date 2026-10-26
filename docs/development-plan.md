@@ -6,7 +6,7 @@ The main rules are [v0.4 with the Jinn Bazaar](rules.md), promoted by Griff on 2
 
 Royal Lamps currently use 75% Uncommon / 25% Legendary odds. Players start with 0 Dinars alongside their free lamp. Each visit offers one guaranteed Copper and two independent lamp-type draws at 60% Copper / 30% Enchanted / 10% Royal. Paid refreshes cost 1 Dinar; earned refreshes are free. These stock weights differ from Jinn rarity odds inside a lamp. The weights, price and 3-Dinar next-lamp discount are provisional parameters to test, not unmade decisions. Stock is private, with three fresh offers each visit. Buy any affordable offers; bought offers disappear and a refresh regenerates all three slots. Reveal/equip immediately using replace-or-release. Bank every earned benefit until spent, with at most one upgrade and one discount per purchase. Upgrade pricing, benefit consumption and the end-turn order were settled as B03–B10 in [agreed decisions](agreed-decisions.md).
 
-The repository contains documentation and reserved directories. No game engine, Bazaar code, AI benchmark, UI prototype or balance simulations have been completed. This change updates existing documents only. Resolve [remaining shop specifications](open-decisions.md) before implementing the economy.
+A playable v1 now exists, with the engine, Bazaar, a basic computer player and a placeholder-art browser interface (see the README). No AI benchmark, balance simulation or human playtest has been completed. The details the engine had to choose are listed in [implementation assumptions](implementation-assumptions.md).
 
 ## Architecture retained from the approved development plan
 
