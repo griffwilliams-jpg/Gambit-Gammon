@@ -1,0 +1,25 @@
+{
+  "name": "gambit-gammon",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Gambit Gammon: backgammon with poker powers and collectible Jinn. Headless rules engine.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/engine/index.js",
+  "types": "./dist/engine/index.d.ts",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "tsc -p tsconfig.build.json",
+    "check": "npm run typecheck && npm run test && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "fast-check": "^4.10.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
