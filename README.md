@@ -2,7 +2,7 @@
 
 A backgammon and poker game with collectible Jinn and a magical marketplace. Risking a checker can earn Dinars for a lamp, but being hit still costs board position and cards.
 
-**Current rules: v0.4 — the Dinar-funded Jinn Bazaar.** The current default awards +1 Dinar for hitting and +2 for being hit. The Bazaar replaces additional free lamps from doubles. Its prices and rewards are provisional balance values, and some shop rules still need decisions.
+**Current rules: v0.4 — the Dinar-funded Jinn Bazaar.** The current default awards +1 Dinar for hitting and +2 for being hit. The Bazaar replaces additional free lamps from doubles. Its prices and rewards are provisional balance values, and the remaining shop rules were settled on 26 October 2026.
 
 **Current build status:** engine foundations only. A headless TypeScript engine plays standard backgammon from the opening contest to bearing off, with seeded dice, legal-action generation, save/load and replay. There is no interface, and no cards, poker powers, Dinars, Bazaar or Jinn are implemented yet. No balance simulation has run.
 

@@ -1,6 +1,6 @@
 # Gambit Gammon v0.4 — current rules
 
-**Current gameplay direction, approved by Griff on 26 October 2026:** the Dinar-funded Jinn Bazaar replaces v0.3's free-lamp doubles economy. This is the main game ruleset, not a separate experimental replacement waiting for approval. Its numerical economy values are provisional balance parameters; the explicitly unresolved details below still need decisions before implementation.
+**Current gameplay direction, approved by Griff on 26 October 2026:** the Dinar-funded Jinn Bazaar replaces v0.3's free-lamp doubles economy. This is the main game ruleset, not a separate experimental replacement waiting for approval. Its numerical economy values are provisional balance parameters; the Bazaar details B03–B10 were settled by Griff later the same day (see [agreed decisions](agreed-decisions.md)).
 
 This existing rules document has a stable, versionless filename so future revisions can update the same source of truth. [Agreed decisions](agreed-decisions.md) records the change; [open decisions](open-decisions.md) lists only remaining specification and balance questions. No game code or simulations accompany this documentation change.
 
@@ -19,7 +19,7 @@ Use normal blocked-point, hit, bar-priority and bearing-off rules. Use both dice
 
 Re-enter barred checkers normally before moving other checkers. No reverse entry, backwards bearing off or backwards movement off the board. A player who has borne off their first checker cannot subsequently use backwards movement to take a checker out of the home board. Being hit still requires normal re-entry and return home before bearing off resumes.
 
-The inherited turn phases are: beginning-of-turn Jinn choices; initial roll and rewards; optional pre-movement poker power; checker movement; eligible Royal Flush declaration; played-card discard and end-turn effects; lamp opening/equipment; next turn. Eligible Bazaar visits occur after completed own turns 3, 6, 9 and so on, including completed bonus turns and blocked turns. Exact ordering relative to end-turn cleanup, reveals/equipment and handover still needs formalisation; the visit does not precede checker movement.
+The inherited turn phases are: beginning-of-turn Jinn choices; initial roll and rewards; optional pre-movement poker power; checker movement; eligible Royal Flush declaration; played-card discard and end-turn effects; lamp opening/equipment; next turn. Eligible Bazaar visits occur after completed own turns 3, 6, 9 and so on, including completed bonus turns and blocked turns. When a visit is due, the end of the turn runs in this order: Royal Flush declaration, played-card discard and end-turn Jinn effects, lamp opening/equipment, the Bazaar visit, then handover. A Royal Flush bonus turn starts after the visit. The visit never precedes checker movement.
 
 Stop on victory. Do not insert a post-victory purchase or additional turn. Game-state changes come from validated actions, never from animation completion.
 
@@ -55,7 +55,7 @@ Each completed legal hit awards:
 | Player hitting an opposing checker | +1 Dinar |
 | Player whose checker is hit | +2 Dinars |
 
-The hit checker goes to the bar normally. The existing card gain and forced discard still happen. A blocked, shield-prevented or otherwise unsuccessful attempted hit awards no Dinars. One actual hit is one reward event; do not award again merely because several Jinn react to it.
+The hit checker goes to the bar normally. The existing card gain and forced discard still happen. A blocked, shield-prevented or otherwise unsuccessful attempted hit awards no Dinars. One actual hit is one reward event; do not award again merely because several Jinn react to it. A hit resolves in this order: the checker goes to the bar; the hitter gains +1 and the hit player +2 Dinars; the hitter draws one card; the hit player discards one random card. Jinn replacement effects (such as Basim or Nahla) change those steps as they happen, then other Jinn triggers run in left-to-right slot order.
 
 The intended trade-off is deliberate exposure for money versus losing board position, bar-entry tempo and potentially a card. Risk-taking is allowed. Do not add diminishing rewards, per-turn earning caps or new movement restrictions before testing whether farming is actually dominant.
 
@@ -75,11 +75,11 @@ Lamp types are shown before purchase; Jinn contents remain a mystery until revea
 | Enchanted | 7 Dinars | 40% Common, 45% Uncommon, 15% Legendary |
 | Royal | 12 Dinars | 0% Common, 75% Uncommon, 25% Legendary |
 
-These prices and probabilities are starting balance parameters, not measured fair values. A purchase spends Dinars and immediately reveals a random Jinn according to the lamp's resolved probabilities. Resolve equipment immediately during the visit; at three equipped Jinn, use the existing replace-or-release choice. Newly acquired Jinn still activate only from the following turn. The exact order of the visit relative to other end-turn effects and handover remains to be specified.
+These prices and probabilities are starting balance parameters, not measured fair values. A purchase spends Dinars and immediately reveals a random Jinn according to the lamp's resolved probabilities. Resolve equipment immediately during the visit; at three equipped Jinn, use the existing replace-or-release choice. Newly acquired Jinn still activate only from the following turn. The visit follows end-turn cleanup and lamp opening and precedes handover (section 2). Releasing or declining a Jinn gives no refund.
 
 Use uniform selection within an eligible rarity and renormalise over remaining eligible rarities if a tier is exhausted, as already approved for v0.3. Royal Lamps remain restricted to eligible Uncommon and Legendary Jinn; fallback never adds Common outcomes. The 75%/25% Royal distribution is an approved provisional balance value, not a measured fair price or strength.
 
-A refresh regenerates the entire three-offer stock rather than rerolling a purchased or revealed Jinn. The same Copper guarantee and random weights apply to every refresh, even after some offers have been bought. Do not silently refill a purchased slot between refreshes or charge Dinars for an earned free refresh. Selection and consumption of free refreshes versus paid refreshes remain to be specified.
+A refresh regenerates the entire three-offer stock rather than rerolling a purchased or revealed Jinn. The same Copper guarantee and random weights apply to every refresh, even after some offers have been bought. Do not silently refill a purchased slot between refreshes or charge Dinars for an earned free refresh. A banked free refresh is always used automatically before any Dinar is charged.
 
 ## 6. Natural doubles now improve Bazaar opportunities
 
@@ -93,15 +93,15 @@ Keep initial-roll provenance separate from effective movement dice. Qualifying n
 
 **There are no additional free lamps from doubles in v0.4.** The free setup lamp remains. The old automatic permanent streak powers also remain replaced by collectible Jinn.
 
-The existing cumulative-versus-streak distinction is retained: a non-double breaks the consecutive streak, not accumulated doubles charge. Reuse the two-charge trigger for a refresh, but specify its consumption/reset order together with visit timing. Four-plus-consecutive bonuses remain deferred.
+The existing cumulative-versus-streak distinction is retained: a non-double breaks the consecutive streak, not accumulated doubles charge. Every second cumulative qualifying natural double banks a free refresh, and the cumulative counter resets after each award. A streak of two banks an upgrade and a streak of three banks a discount; one roll may trigger several awards and all are banked. Four-plus-consecutive bonuses remain deferred.
 
 Bank **every earned use** of free refreshes, Copper upgrades and discounts until spent. Unspent uses survive a broken streak and later visits; earning another use adds to the bank. At most **one upgrade and one discount** may apply to a purchase, even when several uses are banked.
 
-The upgrade concerns the **next purchased Copper Lamp**, rather than v0.3's charge-earned free lamp. Whether an upgraded Copper keeps its Copper price, and the exact selection/consumption order when benefits combine, still need decisions. There is no authority to reroll an already revealed Jinn or apply an upgrade retroactively.
+The upgrade concerns the **next purchased Copper Lamp**, rather than v0.3's charge-earned free lamp. An upgraded Copper keeps its Copper price (4 Dinars) and opens with Enchanted rarity odds. Banked upgrades apply automatically to the next Copper bought. There is no authority to reroll an already revealed Jinn or apply an upgrade retroactively.
 
 Completed extra turns count towards the Bazaar visit clock and use the normal initial-roll reward rule. Pair Reroll, Full Reroll, opponent-forced rerolls and values set by powers cannot farm extra Bazaar reward events.
 
-The three-streak discount applies to the next lamp purchase, with a final price floor of 1 Dinar. Without other benefits, the base-price examples are Copper 4 to 1, Enchanted 7 to 4 and Royal 12 to 9. The amount and floor are approved provisional balance values. Additional banked discounts cannot be combined on the same purchase. Unspent discounts remain banked; consumption order and combined pricing with the Copper upgrade remain decisions to resolve.
+The three-streak discount applies to the next lamp purchase, with a final price floor of 1 Dinar. Without other benefits, the base-price examples are Copper 4 to 1, Enchanted 7 to 4 and Royal 12 to 9. The amount and floor are approved provisional balance values. Additional banked discounts cannot be combined on the same purchase. Unspent discounts remain banked. A banked discount applies automatically to the next lamp bought; when an upgrade and a discount both apply, the upgrade is applied first and then 3 Dinars off with the 1-Dinar floor, so an upgraded Copper costs 1. A benefit is consumed only when the purchase completes.
 
 ## 7. Jinn collection and the retained roster
 
@@ -151,4 +151,4 @@ Existing **synergy hypotheses**, not validated balance: Hadi + Rakhim + Basim (c
 
 The Bazaar is the current game direction. Its benefits and risks remain hypotheses until tested. The [development plan](development-plan.md) defines the comparison against historical v0.3, adversarial strategies, metrics and visual direction.
 
-This rules change authorises documentation updates only. The repository currently has planning documents and reserved implementation directories; there is no implemented engine or measured economy comparison. Resolve [the remaining rules](open-decisions.md) and agree the prototype step before coding this economy.
+Griff approved building a v1 on 26 October 2026. Implementation progress and any interim assumptions are recorded in the README and pull requests. No measured economy comparison exists yet.

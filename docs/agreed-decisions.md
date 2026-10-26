@@ -16,7 +16,7 @@ Griff initially supplied a v0.4 economy experiment, then directed that existing 
 - Replace doubles' additional free lamps: two cumulative qualifying doubles give a free Bazaar refresh; two consecutive qualifying doubles upgrade the next purchased Copper Lamp; three consecutive qualifying doubles give 3 Dinars off the next lamp, with a minimum final price of 1 Dinar.
 - Players start with 0 Dinars alongside their free lamp. Each visit guarantees one Copper; the other two offers independently use 60% Copper / 30% Enchanted / 10% Royal. Paid refreshes cost 1 Dinar; earned refreshes remain free.
 - Each player has private stock and three fresh offers per visit. Buy any affordable offers; bought offers disappear, and purchases reveal/equip immediately using replace-or-release at full capacity. Refreshing regenerates all three slots with the same Copper guarantee and random weights.
-- Bank every earned refresh, upgrade and discount until spent. At most one upgrade and one discount apply to a purchase. Upgrade pricing, benefit selection/consumption order and the exact end-turn queue remain open; stock ownership, sold-slot behaviour and banking are settled.
+- Bank every earned refresh, upgrade and discount until spent. At most one upgrade and one discount apply to a purchase. Upgrade pricing, benefit consumption and the end-turn queue were settled afterwards (see below).
 - Economy A (+1/+1) and C (+1/+3) remain test configurations. Economy B (+1/+2) is current. Do not add anti-farming restrictions or economy-focused Jinn without reviewing evidence and agreeing changes.
 - Keep v0.3 as a historical simulation control, not the live default. Preserve the original v0.2 reference files byte-for-byte.
 - This request changes documentation only; no game engine, simulations, purchases or Bazaar UI have been implemented.
@@ -59,6 +59,22 @@ Griff explicitly selected:
 Every full refresh uses the existing generation rule: one guaranteed Copper plus two independent 60% Copper / 30% Enchanted / 10% Royal draws. Refreshing one player's stock does not change the other player's stock. Purchased slots stay empty until a refresh or the next visit. Unspent Dinars and earned benefits carry forward; a broken streak does not erase banked benefits. Additional banked uses do not increase the upgrade or discount applied to one purchase.
 
 These choices settle ownership, stock reset, purchase quantity, sold-slot handling, immediate reveals/equipment and benefit banking. They do not settle the upgraded Copper's price, benefit selection/consumption order, a refund/resale policy or the remaining end-turn effect order. No retroactive reroll of a revealed Jinn is approved.
+
+## 26 October 2026: remaining Bazaar details (B03–B10) and v1 build approved
+
+Griff selected the following options and asked for a v1 of the game to be built:
+
+| ID | Accepted choice |
+| --- | --- |
+| B03 | A banked free refresh is used automatically before any Dinar is charged. |
+| B04 | End of turn: Royal Flush declaration, played-card discard and end-turn Jinn effects, lamp opening/equipment, Bazaar visit, handover. A Royal Flush bonus turn starts after the visit. |
+| B05 | No refund or resale for released or declined Jinn. |
+| B07 | Every second cumulative qualifying natural double banks a refresh, resetting the counter. Streak 2 banks an upgrade, streak 3 a discount, 4+ nothing extra yet. All awards from one roll are banked. |
+| B08 | An upgraded Copper keeps the Copper price (4) and opens with Enchanted odds. |
+| B09 | Benefits apply automatically (upgrade to next Copper, discount to next lamp); upgrade first, then 3 off with a 1-Dinar floor. Consumed only when the purchase completes. |
+| B10 | Hit order: checker to bar, Dinars, hitter's card draw, hit player's random discard; replacement Jinn effects modify those steps; other triggers then run in slot order. |
+
+Numerical values remain provisional balance parameters. Any lower-level rule details the implementation has to assume are recorded separately for review, not added here.
 
 ## Retained from the approved v0.3 development-planning session
 
