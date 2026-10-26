@@ -4,7 +4,7 @@
 
 The main rules are [v0.4 with the Jinn Bazaar](rules.md), promoted by Griff on 26 October 2026. Economy B (+1 Dinar for hitting, +2 for being hit) is the provisional default. Historical v0.3 is the control for later comparisons, not an alternative current default.
 
-Royal Lamps currently use 75% Uncommon / 25% Legendary odds. Each visit stocks three random mystery lamps; the exact stock weights and refresh/purchase semantics are still to be agreed. The Royal weights and 3-Dinar next-lamp discount are provisional parameters to test, not unmade decisions.
+Royal Lamps currently use 75% Uncommon / 25% Legendary odds. Players start with 0 Dinars alongside their free lamp. Each visit offers one guaranteed Copper and two independent lamp-type draws at 60% Copper / 30% Enchanted / 10% Royal. Paid refreshes cost 1 Dinar; earned refreshes are free. These stock weights differ from Jinn rarity odds inside a lamp. The weights, price and 3-Dinar next-lamp discount are provisional parameters to test, not unmade decisions. Purchase/restocking and benefit-combination rules still need decisions.
 
 The repository contains documentation and reserved directories. No game engine, Bazaar code, AI benchmark, UI prototype or balance simulations have been completed. This change updates existing documents only. Resolve [remaining shop specifications](open-decisions.md) before implementing the economy.
 
@@ -35,7 +35,7 @@ These are design hypotheses, not measured improvements.
 2. **Positive-sum money creation:** every hit creates 3 Dinars under B (2 under A and 4 under C). A/B/C therefore change total money supply as well as compensation for risk. Report both effects rather than attributing all differences to risk preference.
 3. **Mutual prolonging:** both players may benefit from a long capture loop. Test whether a rational opponent can refuse an avoidable hit or race ahead. Agents must obey compulsory dice usage and cannot pass a legal required move just to optimise the economy.
 4. **Indirect card/Jinn amplification:** Hadi, Rakhim and Basim can reward captures without directly awarding Dinars. Extra cards can create more reverse moves, hits or turns. Qamar, Sahira and Mazin may alter high-power frequency. Log the full chain, not just Dinars credited.
-5. **Rotating stock needs generation rules:** each visit now offers three random mystery lamps and refreshes change the offered lamp types. Define generation weights, tier guarantees and sold-slot handling before implementation. Mystery Jinn content does not imply permission to reroll a revealed purchase.
+5. **Rotating stock needs purchase rules:** each visit guarantees one Copper and two independent 60%/30%/10% lamp-type draws. A paid refresh costs 1 Dinar; earned refreshes are free. Define ownership, sold-slot handling and guarantee behaviour under partial refreshes before implementation. Mystery Jinn content does not imply permission to reroll a revealed purchase.
 6. **Purchase-benefit ordering:** the three-streak discount is now 3 Dinars off the next lamp, minimum final price 1. Define its stacking, expiry and consumption order with the Copper upgrade. Do not import the old free-lamp upgrade behaviour or apply benefits retroactively.
 7. **Timing and full slots:** a player may earn enough money while the Bazaar is closed, lose before the next visit, or find that a fourth lamp has little replacement value. Visits now follow completed own turns 3/6/9, including bonus and blocked turns. Measure how that access pattern affects saving, buying and releasing, and specify the remaining end-turn event order.
 8. **Collection is not exclusively passive:** the retained roster includes activated and once-per-match abilities. The Bazaar must not silently convert all twelve Jinn to passive-only effects or reset spent abilities through purchases.
@@ -64,7 +64,7 @@ Test fixed starting positions and existing Jinn combinations as well as full mat
 - Match turns and duration; completion, deadlock and turn-cap rates; first-player advantage.
 - Hits made/received, checker exposure and bar/re-entry delays; per-checker repeated-hit sequences and changes in pip distance.
 - Dinars earned, spent and unspent, purchases and purchase timing by lamp type, and the rarity of the Jinn actually revealed.
-- Bazaar visits, purchase opportunities, unaffordable visits, affordable visits voluntarily skipped and time from earning money to being able to spend it.
+- Bazaar visits, purchase opportunities, unaffordable visits, affordable visits voluntarily skipped and time from earning money to being able to spend it. Include the effect of starting at 0 Dinars, the guaranteed Copper offer and the 1-Dinar cost of a paid refresh.
 - Free refreshes, upgrades and discounts earned/used/expired once their semantics are defined.
 - Card draws/discards, power use, Jinn acquisition/activation, replacement and release when all slots are full.
 - Outcomes by opponent strength, style, seat, starting position and resource/position deficit before a possible comeback.

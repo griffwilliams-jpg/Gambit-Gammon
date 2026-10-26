@@ -18,7 +18,7 @@ The Bazaar is the current game's magical marketplace, not a conventional shop sc
 
 Present prices, balance, pending visit timing and the exact benefits available before a purchase. Make spending/saving and replacement/release choices clear. Reveal Jinn with personality and visible rarity; do not confuse a lamp type with the rarity actually revealed. Explain why an upgrade or discount was consumed.
 
-Show progress towards visits after own turns 3, 6, 9 and so on, including completed bonus and blocked turns. Present three mystery-lamp offers with visible lamp types, prices and odds. A refresh changes those available lamp types; its cost and treatment of sold offers are still being specified. Royal Lamps show 75% Uncommon / 25% Legendary. Keep the remaining cleanup/reveal/handover ordering a rule decision rather than allowing animation timing to decide it.
+Show progress towards visits after own turns 3, 6, 9 and so on, including completed bonus and blocked turns. Present one guaranteed Copper and two random mystery-lamp offers with visible types, prices and odds. Stock-generation odds are 60% Copper / 30% Enchanted / 10% Royal for each random slot; Royal contents are 75% Uncommon / 25% Legendary. Distinguish these two distributions. Show the 1-Dinar paid-refresh price and earned free refreshes clearly, and do not imply that 0 starting Dinars can fund a purchase. Sold-slot behaviour and cleanup/reveal/handover ordering remain rule decisions rather than animation choices.
 
 No visual mock-up, asset set, animation or game UI is implemented by this documentation update. Griff reviews the art direction before full asset production.
 

@@ -11,7 +11,7 @@ This existing rules document has a stable, versionless filename so future revisi
 - Use a standard 52-card deck, without physical Jokers. Deal five cards each; maximum hand size seven.
 - Each player receives one free mystery Jinn lamp before play. Each can equip up to three Jinn. Further lamps are primarily purchased in the Bazaar.
 - Determine the starter by each player rolling one die, repeating ties. The winner uses those two unequal dice as their first movement dice. An opening 6-and-1 may trigger its normal card exchange.
-- The initial Dinar balance has not been specified. Do not silently assume a starting grant or choose a starting amount.
+- Each player starts with **0 Dinars**, in addition to their free starting mystery Jinn lamp. Earn purchase money through play.
 
 ## 2. Movement and turn structure
 
@@ -65,7 +65,9 @@ The +1/+2 setting is **Economy B**, the current provisional default. Economies A
 
 The Bazaar opens **after completed own turns 3, 6, 9 and so on**. Completed bonus turns and blocked turns count towards this personal-turn clock. Players may buy lamps or save their Dinars for a later visit.
 
-Each visit stocks **three randomly selected mystery-lamp offers**. Their lamp types are shown before purchase; their Jinn contents remain a mystery until revealed. A refresh changes the lamp types available. Stock probabilities, guarantees/duplicates, private versus shared stock, refresh cost, treatment of purchased slots and purchase limits remain unresolved; do not invent these details.
+Each visit stocks **three mystery-lamp offers**: one guaranteed Copper Lamp and two independently generated offers. Each of the two random slots has a **60% Copper / 30% Enchanted / 10% Royal** chance. Repeated lamp types are possible because those two slots are independent; this does not relax equipped-Jinn duplicate restrictions. These are provisional stock-generation parameters, separate from the Jinn rarity probabilities inside each lamp.
+
+Lamp types are shown before purchase; Jinn contents remain a mystery until revealed. A refresh changes the available lamp types. **Paid refreshes cost 1 Dinar; refreshes earned from doubles are free.** Private versus shared stock, refresh limits, treatment of purchased slots, purchase limits and the application of the Copper guarantee when refreshing partly sold stock remain unresolved.
 
 | Lamp | Base cost | Rarity distribution |
 | --- | ---: | --- |
@@ -77,7 +79,7 @@ These prices and probabilities are starting balance parameters, not measured fai
 
 Use uniform selection within an eligible rarity and renormalise over remaining eligible rarities if a tier is exhausted, as already approved for v0.3. Royal Lamps remain restricted to eligible Uncommon and Legendary Jinn; fallback never adds Common outcomes. The 75%/25% Royal distribution is an approved provisional balance value, not a measured fair price or strength.
 
-A refresh regenerates the offered lamp types. This is a rotating stock rather than a fixed menu with nothing to refresh. Its exact generation weights and handling of sold slots must be agreed before implementation.
+A refresh regenerates offered lamp types rather than rerolling a purchased or revealed Jinn. The approved initial three-offer generation rule is one guaranteed Copper plus two independent 60%/30%/10% lamp-type draws, and a paid refresh costs 1 Dinar. Define sold-slot/restocking behaviour and how the Copper guarantee applies to any partial refresh before implementation; do not silently refill purchased slots or charge Dinars for an earned free refresh.
 
 ## 6. Natural doubles now improve Bazaar opportunities
 

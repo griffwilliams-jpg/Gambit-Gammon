@@ -8,9 +8,9 @@ Read [current rules](rules.md) and [the decision history](agreed-decisions.md) f
 
 | ID | Decision needed | Why it changes gameplay |
 | --- | --- | --- |
-| B01 | Initial Dinar balance. | Starting purchasing power has not been specified; a starting grant must not be invented. |
-| B02 | Generation weights for the three lamp offers; guarantees/duplicates and private/shared stock. | The count and rotating-lamp model are resolved. Do not silently choose probabilities or assume a guaranteed affordable tier. |
-| B03 | Paid-refresh price, refresh limit, treatment of sold slots and whether one player's refresh affects the other. | Refreshing offered lamp types is agreed; it does not authorise rerolling a purchased/revealed Jinn. |
+| B01 — resolved | Each player starts with 0 Dinars alongside their free starting lamp. | The first purchase must be earned through play. |
+| B02 | Private versus shared stock; application of the Copper guarantee when refreshing partly sold stock. | Initial stock is already one guaranteed Copper plus two independent 60% Copper / 30% Enchanted / 10% Royal draws. Repeated lamp types can occur; starting with 0 Dinars does not guarantee affordability. |
+| B03 | Refresh limit, treatment of sold slots and whether one player's refresh affects the other; how free tokens are selected/consumed. | Paid refreshes cost 1 Dinar and earned refreshes stay free. Refresh changes lamp offers, not a purchased/revealed Jinn. |
 | B04 | Exact end-turn ordering of the eligible visit, cleanup, reveals/equipment and handover. | Visits after completed own turns 3/6/9, including bonus and blocked turns, are agreed. Only the detailed event queue remains to specify. |
 | B05 | Purchases per visit; optional visits; carry-over/reset of offers; purchase/reveal/equip timing; replacement/release and any refund policy. | Determines interruption cost, spending speed and usefulness once three slots are full. No resale or release refund is currently specified. |
 | B06 — resolved | Royal is 75% Uncommon / 25% Legendary, excluding Common. | Retain uniform eligible-Jinn selection and renormalisation within those two tiers. These are provisional balance values; the choice itself is settled. |
@@ -30,7 +30,7 @@ These questions must be resolved as a coherent purchase/turn model, not independ
 - Remove the obsolete undefined 'river' terminology from executable design unless Griff defines an actual separate mechanic; do not change the historical JSON.
 - Encode standard mandatory dice usage and bearing-off examples with powers. These constraints are agreed rules to formalise, not optional new mechanics.
 
-Bazaar choices now resolved: three random lamp offers; refresh changes available lamp types; visits after own turns 3/6/9 including completed bonus and blocked turns; Royal 75% Uncommon / 25% Legendary; next-lamp discount of 3 Dinars with a 1-Dinar minimum. Stock-generation probabilities and benefit combinations are not resolved by those choices.
+Bazaar choices now resolved: 0 starting Dinars plus the free lamp; one guaranteed Copper and two independent 60% Copper / 30% Enchanted / 10% Royal offers; paid refreshes 1 Dinar, earned refreshes free; visits after own turns 3/6/9 including completed bonus and blocked turns; Royal contents 75% Uncommon / 25% Legendary; next-lamp discount of 3 Dinars with a 1-Dinar minimum. Stock ownership, sold-slot/restocking behaviour and benefit combinations remain to be resolved.
 
 Already resolved inherited rules: initial-roll-only rewards; standard opening; four movements from effective doubles; reverse-home lock after first bear-off; meaningful enchanted-stack exchanges; overlapping poker-power choice; Malik skipping two own turns; next-turn Jinn activation including bonus turns; Basim discarding his other card. See [agreed decisions](agreed-decisions.md).
 
