@@ -1,3 +1,7 @@
 # Game implementation
 
-`src/engine/` holds the headless TypeScript rules engine. It has no rendering, DOM or Node dependencies, so an interface or simulator can sit on top of it. No interface code exists yet. See the main README for what the engine covers.
+- `engine/`: headless TypeScript rules engine with no rendering, DOM or Node dependencies.
+- `ai/`: the computer opponent, which decides from observations only.
+- `ui/`: the browser game, with a Phaser board and HTML panels for every decision.
+
+See the main README for how to run it.

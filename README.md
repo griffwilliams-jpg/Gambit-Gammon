@@ -4,9 +4,9 @@ A backgammon and poker game with collectible Jinn and a magical marketplace. Ris
 
 **Current rules: v0.4 — the Dinar-funded Jinn Bazaar.** The current default awards +1 Dinar for hitting and +2 for being hit. The Bazaar replaces additional free lamps from doubles. Its prices and rewards are provisional balance values, and the remaining shop rules were settled on 26 October 2026.
 
-**Current build status:** engine foundations only. A headless TypeScript engine plays standard backgammon from the opening contest to bearing off, with seeded dice, legal-action generation, save/load and replay. There is no interface, and no cards, poker powers, Dinars, Bazaar or Jinn are implemented yet. No balance simulation has run.
+**Current build status:** playable v1 with placeholder art. You can play the full v0.4 rules in a browser, against the computer or with two players on one screen. That covers all ten poker powers, all twelve Jinn, Dinars and the Jinn Bazaar. The art is simple shapes in the approved palette, not the planned pixel art, and there is no sound. No balance simulation or human playtest has been run. Details the rules leave open are recorded for review in [implementation assumptions](docs/implementation-assumptions.md).
 
-## Running and testing
+## Play it
 
 You need Node.js 20 or later (tested with Node 22.18).
 
@@ -15,39 +15,49 @@ npm install
 ```
 
 ```bash
+npm run dev
+```
+
+Then open the address it prints (normally http://localhost:5173). Your game autosaves in the browser, and the menu can also download a save file and load it back.
+
+- **Moving:** click a highlighted checker, then a green destination. Every legal move is also listed as a button, so you can play entirely by keyboard.
+- **Powers:** your hand shows under the players. Poker powers appear as buttons before your first move; pick one, then pick how to use it.
+- **Two players:** a "Pass to…" screen hides each player's cards and shop stock between turns.
+
+## Running the checks
+
+```bash
 npm run check
 ```
 
-`npm run check` runs the type check, the test suite and the build in that order, and stops at the first failure. Each step also runs on its own:
+That runs the type check, the tests and the build, stopping at the first failure. Each step also runs on its own:
 
 | Command | What it does |
 | --- | --- |
-| `npm run typecheck` | Strict TypeScript check of the engine and tests. |
-| `npm test` | Runs the Vitest suite once, including 200 seeded random games to completion. |
-| `npm run test:watch` | Reruns tests as you edit. |
-| `npm run build` | Compiles the engine to `dist/` with type declarations. The build has no DOM or Node types, so engine code cannot depend on a renderer or the browser. |
+| `npm run typecheck` | Strict TypeScript check of the engine, computer player, interface and tests. |
+| `npm test` | Runs the Vitest suite once (about 100 tests, including 200 seeded random games and bot-vs-random games). |
+| `npm run build` | Compiles the engine and computer player to `dist/` (with no DOM or Node types, so they can't depend on a browser), then builds the web game to `dist-web/`. |
+| `npm run preview` | Serves the built web game. |
 
-### What the engine does now
+## How it fits together
 
-The public interface lives in `src/engine/index.ts`:
+- **`src/engine/`**: the rules, with no rendering. `createGame`, `getLegalActions`, `applyAction`, `getObservation`, save/load and replay. Every choice in a turn is an explicit decision answered by a legal action. Rejected or stale actions change neither the game nor its randomness. Dice, deck shuffles, forced discards, Bazaar stock and lamp contents each use their own seeded random stream. Saves and replays carry the ruleset version, and a v0.3 file is refused.
+- **`src/ai/`**: the computer opponent. It decides only from what its player can see, and its own randomness is kept apart from the game's. It beats a random player about 97% of the time; it is not a strong player.
+- **`src/ui/`**: Phaser 4.2.1 draws the board, and plain HTML panels handle every decision, the Bazaar, the hand and the event log.
 
-- `createGame({ seed })` sets up the standard position with 15 individually identified checkers per player and starts the opening contest.
-- `getLegalActions(state, player?)` lists every legal action. Moves name the exact checker, source, destination and die.
-- `applyAction(state, action)` returns a new state and an ordered list of events. Invalid, stale or out-of-turn actions are rejected and the original state, including its random state, is returned untouched.
-- `getObservation(state, viewer)` is what a player or interface may see. It never contains the match seed or random state.
-- `saveGame` / `loadGame` and `createReplay` / `runReplay` serialise games with the ruleset identity and version. Loading re-derives the state from the seed and action log and refuses saves that disagree, as well as any file from another rules version such as v0.3.
+### Known gaps
 
-Each player rolls one die in the opening contest, ties are rerolled, and the higher roller moves first using both dice. Movement follows normal blocked-point, hit, bar-entry and bearing-off rules. The engine searches whole move sequences so it never offers a move that would stop a later die being used, and it applies the higher-die rule when only one of two different dice can be played. A blocked turn ends with an explicit `end-turn` action.
-
-### Not built yet
-
-Cards, poker powers, the opening 6-and-1 card exchange, hit card rewards, Dinars, the Bazaar, Jinn and any interface. The rules configuration records the v0.4 economy and Bazaar values marked `provisional`, but nothing reads them yet. The open shop questions in [open decisions](docs/open-decisions.md) are still open.
+- Placeholder art and no sound. The pixel-art Jinn, lamps and Bazaar merchant still need designing and approving.
+- No browser-level (Playwright) tests yet; the engine and computer player are tested, the interface was checked by hand.
+- The computer player is basic and does not plan whole turns.
+- Phone layouts, online play and the balance comparisons in the development plan are later work.
 
 ## Start here
 
 - [Current game rules](docs/rules.md): board, cards, powers, Dinars, Bazaar, doubles and all twelve Jinn.
 - [Agreed decisions and history](docs/agreed-decisions.md): current authority and the retained development-planning decisions.
-- [Remaining decisions](docs/open-decisions.md): exact shop rules needed before implementation.
+- [Remaining decisions](docs/open-decisions.md): resolved shop rules and open balance questions.
+- [Implementation assumptions](docs/implementation-assumptions.md): details the engine had to choose, for Griff to confirm or overrule.
 - [Jinn design](docs/jinn-design.md): approved roster, retained activations and future candidates.
 - [Development and testing plan](docs/development-plan.md): architecture, staged work, Bazaar assessment and v0.3 comparisons.
 - [Visual direction](docs/design-direction.md): original pixel art, board, lamps and Bazaar presentation.
@@ -61,10 +71,12 @@ The existing version-specific rules and decisions files have been renamed to sta
 docs/       Current rules, decisions, design and development plan
 reference/  Untouched original material
 src/engine/ Headless rules engine (no rendering code)
+src/ai/     Computer opponent
+src/ui/     Browser game (Phaser board, HTML panels)
 tests/      Vitest and fast-check tests, including seeded random games
 assets/     Reserved for original or appropriately licensed art and sound
 ```
 
-The approved implementation direction is a headless TypeScript engine with Phaser/Vite presentation, reproducible randomness, legal actions, saves/replay and local computer opponents. The engine, tests and build pipeline exist; Phaser/Vite presentation has not been added.
+The approved implementation direction is a headless TypeScript engine with Phaser/Vite presentation, reproducible randomness, legal actions, saves/replay and local computer opponents. The engine, computer player, tests and a Phaser/Vite browser game now exist.
 
 Work through the remaining rule details with Griff before implementing the Bazaar. Dinars are an in-game resource; no real-money feature or monetisation model has been specified.
