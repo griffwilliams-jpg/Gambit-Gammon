@@ -352,7 +352,8 @@ function runTask(draft: Draft, task: Task, events: GameEvent[]): void {
       if (draft.completedOwnTurns[player] % draft.rules.bazaar.visitEveryOwnTurns !== 0) return;
       const stock = generateStock(draft);
       draft.players[player].stock = stock;
-      events.push({ type: 'bazaar-opened', player, stock });
+      // Stock is private, so the shared event carries no offers (Z1).
+      events.push({ type: 'bazaar-opened', player });
       return push(draft, { t: 'bazaar-menu' });
     }
     case 'bazaar-menu':
@@ -850,7 +851,8 @@ function powerActions(state: GameState, player: PlayerId): GameAction[] {
       case 'straight-flush':
         for (let a = 1; a <= 6; a++) {
           for (let b = 1; b <= 6; b++) {
-            if (a !== e0 || b !== e1) add({ power, values: [a, b] });
+            // Setting the dice to the values they already show (in either order) changes nothing.
+            if (!((a === e0 && b === e1) || (a === e1 && b === e0))) add({ power, values: [a, b] });
           }
         }
         break;
@@ -1005,7 +1007,7 @@ function resolveDecision(draft: Draft, decision: Decision, action: GameAction, e
         p.dinars -= paid;
       }
       p.stock = generateStock(draft);
-      events.push({ type: 'bazaar-refreshed', player, paid, stock: p.stock.filter((s): s is LampType => s !== null) });
+      events.push({ type: 'bazaar-refreshed', player, paid });
       return push(draft, { t: 'bazaar-menu' });
     }
     case 'bazaar-leave':
@@ -1073,6 +1075,7 @@ function moveChecker(draft: Draft, action: Extract<GameAction, { type: 'move-che
   events.push({ type: 'checker-moved', player, checkerId: checker.id, from: action.from, to: action.to, die: action.die, reverse });
 
   const tasks: Task[] = [];
+  let hitId: CheckerId | null = null;
   if (action.to === 'off') {
     events.push({ type: 'checker-borne-off', player, checkerId: checker.id });
     removeShield(draft, checker.id, 'left-board', events);
@@ -1090,32 +1093,35 @@ function moveChecker(draft: Draft, action: Extract<GameAction, { type: 'move-che
       draft.players[opponent].dinars += economy.hitPlayerDinars;
       events.push({ type: 'dinars-awarded', player: opponent, amount: economy.hitPlayerDinars, balance: draft.players[opponent].dinars, reason: 'hit' });
       tasks.push({ t: 'hit-card', player }, { t: 'forced-discard', player: opponent });
-      for (const jinn of draft.players[player].jinn) {
-        if (jinn.activeFromTurn > draft.turnNumber) continue;
-        if (jinn.id === 'hadi' && turn.hadiMark === blot.id && !turn.hadiTriggered) {
-          turn.hadiTriggered = true;
-          events.push({ type: 'jinn-triggered', player, jinn: 'hadi', detail: 'marked checker hit' });
-          tasks.push({ t: 'draw', player, locked: true, source: 'hadi' });
-        }
-        if (jinn.id === 'rakhim' && jinn.target === checker.id && !turn.rakhimTriggered) {
-          turn.rakhimTriggered = true;
-          events.push({ type: 'jinn-triggered', player, jinn: 'rakhim', detail: 'enchanted checker hit' });
-          tasks.push({ t: 'draw', player, locked: true, source: 'rakhim' });
-        }
-      }
+      hitId = blot.id;
     }
-    // A shield ends early when its owner stacks onto the shielded checker.
-    for (const shield of draft.shields.filter((s) => s.owner === player)) {
-      const shielded = checkerById(draft, shield.checkerId);
-      if (shielded.location.kind === 'point' && checkersOn(draft, shielded.location.point).length > 1) {
-        removeShield(draft, shield.checkerId, 'self-stacked', events);
+    // A shield ends early when its owner stacks onto the shielded checker:
+    // either another checker lands on it, or the shielded checker joins a stack.
+    const landed = checkersOn(draft, point);
+    if (landed.length > 1) {
+      for (const shield of draft.shields.filter((s) => s.owner === player)) {
+        if (landed.some((c) => c.id === shield.checkerId)) removeShield(draft, shield.checkerId, 'self-stacked', events);
       }
     }
   }
-  if (reverse && !turn.siroccoTriggered && isActive(draft, player, 'sirocco')) {
-    turn.siroccoTriggered = true;
-    events.push({ type: 'jinn-triggered', player, jinn: 'sirocco', detail: 'first backward move' });
-    tasks.push({ t: 'draw', player, locked: false, source: 'sirocco' });
+  // Other Jinn triggers from this movement, in left-to-right slot order (B10).
+  for (const jinn of draft.players[player].jinn) {
+    if (jinn.activeFromTurn > draft.turnNumber) continue;
+    if (jinn.id === 'hadi' && hitId !== null && turn.hadiMark === hitId && !turn.hadiTriggered) {
+      turn.hadiTriggered = true;
+      events.push({ type: 'jinn-triggered', player, jinn: 'hadi', detail: 'marked checker hit' });
+      tasks.push({ t: 'draw', player, locked: true, source: 'hadi' });
+    }
+    if (jinn.id === 'rakhim' && hitId !== null && jinn.target === checker.id && !turn.rakhimTriggered) {
+      turn.rakhimTriggered = true;
+      events.push({ type: 'jinn-triggered', player, jinn: 'rakhim', detail: 'enchanted checker hit' });
+      tasks.push({ t: 'draw', player, locked: true, source: 'rakhim' });
+    }
+    if (jinn.id === 'sirocco' && reverse && !turn.siroccoTriggered) {
+      turn.siroccoTriggered = true;
+      events.push({ type: 'jinn-triggered', player, jinn: 'sirocco', detail: 'first backward move' });
+      tasks.push({ t: 'draw', player, locked: false, source: 'sirocco' });
+    }
   }
 
   if (draft.checkers.every((c) => c.owner !== player || c.location.kind === 'off')) {

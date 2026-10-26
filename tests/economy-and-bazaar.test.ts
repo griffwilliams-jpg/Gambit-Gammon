@@ -139,6 +139,9 @@ describe('Bazaar', () => {
     // The opponent cannot see the private stock.
     expect(getObservation(open, 'black').private.stock).toEqual([]);
     expect(JSON.stringify(getObservation(open, 'black'))).not.toContain('"stock":["copper"');
+    // The shared event stream does not carry the private offers either.
+    expect(JSON.stringify(events)).not.toContain('enchanted');
+    expect(events.find((e) => e.type === 'bazaar-opened')).toEqual({ type: 'bazaar-opened', player: 'white' });
     const left = apply(open, find(open, (a) => a.type === 'bazaar-leave'));
     expect(left.pending).toEqual({ kind: 'roll', player: 'black' });
   });

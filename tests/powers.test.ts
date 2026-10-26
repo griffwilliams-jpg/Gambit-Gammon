@@ -79,6 +79,11 @@ describe('dice powers', () => {
       black: { 1: 2 },
       hands: { white: ['5H', '6H', '7H', '8H', '9H'] },
     });
+    const settings = powers(state).filter((p) => p.params.power === 'straight-flush').map((p) => (p.params.power === 'straight-flush' ? p.params.values.join('-') : ''));
+    // Neither the current dice nor their reverse is a meaningful setting.
+    expect(settings).not.toContain('3-1');
+    expect(settings).not.toContain('1-3');
+    expect(settings).toHaveLength(34);
     const after = play(state, (p) => p.params.power === 'straight-flush' && p.params.values[0] === 6 && p.params.values[1] === 5);
     expect(after.turn?.dice?.remaining).toEqual([6, 5]);
   });
@@ -232,6 +237,33 @@ describe('Flush shield', () => {
     state = apply(state, getLegalActions(state).find((a) => a.type === 'move-checker' || a.type === 'end-turn')!);
     if (state.pending?.kind === 'move') state = endTurn(state);
     expect(state.shields).toEqual([]);
+  });
+});
+
+describe('Flush shield on a stack', () => {
+  const setup = () => {
+    const state = scenario({
+      player: 'white',
+      dice: [3, 1],
+      white: { 6: 3, 20: 1, 10: 1 },
+      black: { 1: 2 },
+      hands: { white: ['2D', '7D', '9D', 'JD', 'KD'] },
+    });
+    const id = state.checkers.find((c) => c.owner === 'white' && c.location.kind === 'point' && c.location.point === 6)!.id;
+    return { state: play(state, (p) => p.params.power === 'flush' && p.params.checkerId === id), id };
+  };
+
+  it('is not removed by an unrelated move elsewhere', () => {
+    const { state, id } = setup();
+    const after = apply(state, firstMove(state, 20, 17, 3));
+    expect(after.shields.map((s) => s.checkerId)).toEqual([id]);
+  });
+
+  it('ends when another own checker lands on its point', () => {
+    const { state } = setup();
+    const after = apply(state, firstMove(state, 10, 7, 3));
+    const stacked = apply(after, firstMove(after, 7, 6, 1));
+    expect(stacked.shields).toEqual([]);
   });
 });
 
