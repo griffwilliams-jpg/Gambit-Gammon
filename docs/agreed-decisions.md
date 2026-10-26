@@ -15,7 +15,8 @@ Griff initially supplied a v0.4 economy experiment, then directed that existing 
 - Keep the free starting lamp, three equipped Jinn, existing twelve-Jinn roster, duplicate restrictions and once-per-match tracking.
 - Replace doubles' additional free lamps: two cumulative qualifying doubles give a free Bazaar refresh; two consecutive qualifying doubles upgrade the next purchased Copper Lamp; three consecutive qualifying doubles give 3 Dinars off the next lamp, with a minimum final price of 1 Dinar.
 - Players start with 0 Dinars alongside their free lamp. Each visit guarantees one Copper; the other two offers independently use 60% Copper / 30% Enchanted / 10% Royal. Paid refreshes cost 1 Dinar; earned refreshes remain free.
-- Sold-slot and purchase behaviour, stock ownership, benefit stacking/expiry/consumption and the exact end-turn queue must still be defined before implementation. Do not reopen already selected stock odds, refresh price, post-turn cadence, Royal weights or discount as though no choice was made.
+- Each player has private stock and three fresh offers per visit. Buy any affordable offers; bought offers disappear, and purchases reveal/equip immediately using replace-or-release at full capacity. Refreshing regenerates all three slots with the same Copper guarantee and random weights.
+- Bank every earned refresh, upgrade and discount until spent. At most one upgrade and one discount apply to a purchase. Upgrade pricing, benefit selection/consumption order and the exact end-turn queue remain open; stock ownership, sold-slot behaviour and banking are settled.
 - Economy A (+1/+1) and C (+1/+3) remain test configurations. Economy B (+1/+2) is current. Do not add anti-farming restrictions or economy-focused Jinn without reviewing evidence and agreeing changes.
 - Keep v0.3 as a historical simulation control, not the live default. Preserve the original v0.2 reference files byte-for-byte.
 - This request changes documentation only; no game engine, simulations, purchases or Bazaar UI have been implemented.
@@ -31,7 +32,7 @@ Griff explicitly selected the following options during the rules discussion:
 | Royal odds | 75% Uncommon, 25% Legendary; no Common Jinn. Provisional balance values. |
 | Three-streak discount | 3 Dinars off the next lamp purchase, minimum final price 1 Dinar. Provisional balance values. |
 
-At this point, only those four choices were resolved. Stock weights, guarantees and refresh cost were subsequently selected below; purchase/restocking behaviour and benefit stacking/expiry remain open. The current documentation is ahead of the initial Claude audit baseline at commit e8c180f; an audit of that frozen commit must account for subsequent recorded decisions.
+At that stage, only those four choices were resolved. Stock weights, guarantees, refresh cost, purchase/refresh behaviour and benefit banking were subsequently selected below. The current documentation is ahead of the initial Claude audit baseline at commit e8c180f; an audit of that frozen commit must account for subsequent recorded decisions.
 
 ## 26 October 2026: starting money, stock generation and refresh price
 
@@ -43,7 +44,21 @@ Griff explicitly selected:
 | Three-offer stock | One guaranteed Copper; each other slot independently rolls 60% Copper / 30% Enchanted / 10% Royal. These are provisional stock weights, separate from Jinn rarity odds. |
 | Refresh price | Paid refreshes cost 1 Dinar. Refreshes earned through doubles remain free. |
 
-Independent random slots may produce repeated lamp types. These choices do not resolve stock ownership, purchased-slot replenishment, purchase limits, benefit stacking/expiry or how the guarantee applies to partly sold refreshes. Do not turn the 1-Dinar paid-refresh price into a charge for an earned free refresh.
+Independent random slots may produce repeated lamp types. Stock ownership, purchase/refresh behaviour and benefit banking were settled in the subsequent decisions below. Do not turn the 1-Dinar paid-refresh price into a charge for an earned free refresh.
+
+## 26 October 2026: private visits, purchases and banked benefits
+
+Griff explicitly selected:
+
+| Topic | Accepted choice |
+| --- | --- |
+| Ownership and reset | Private stock for each player; generate three fresh offers at every visit. |
+| Buying and refreshing | Buy any affordable offers. Purchased offers disappear; a refresh regenerates all three slots. Purchases reveal the Jinn immediately and use the existing replace-or-release choice. |
+| Earned benefits | Bank every earned refresh, Copper upgrade and discount until spent. At most one upgrade and one discount may apply to a purchase. |
+
+Every full refresh uses the existing generation rule: one guaranteed Copper plus two independent 60% Copper / 30% Enchanted / 10% Royal draws. Refreshing one player's stock does not change the other player's stock. Purchased slots stay empty until a refresh or the next visit. Unspent Dinars and earned benefits carry forward; a broken streak does not erase banked benefits. Additional banked uses do not increase the upgrade or discount applied to one purchase.
+
+These choices settle ownership, stock reset, purchase quantity, sold-slot handling, immediate reveals/equipment and benefit banking. They do not settle the upgraded Copper's price, benefit selection/consumption order, a refund/resale policy or the remaining end-turn effect order. No retroactive reroll of a revealed Jinn is approved.
 
 ## Retained from the approved v0.3 development-planning session
 
