@@ -1,48 +1,37 @@
-# Collectible Jinn — v0.3 design notes
+# Jinn design — current v0.4 rules
 
-## Confirmed direction
+## Retained collection
 
-Jinn are collectible modifiers that persist and change play, with distinctive names and personalities. Each player begins with one free mystery lamp. More lamps come from cumulative qualifying random-doubles charges plus streak bonuses. Jinn take over abilities previously awarded by the permanent doubles-streak ladder.
+The Dinar-funded Bazaar is now the current lamp-acquisition system. Keep the existing twelve-Jinn roster and three active slots. Every player still receives a free mystery lamp before play. Further lamps are primarily purchased; qualifying doubles create Bazaar benefits rather than additional free lamps.
 
-The recovered messages do not define an account-level collection, cross-match persistence, rarity table, active-slot limit, duplicate policy, lamp cost or reveal timing. Those remain design choices.
+See [current rules and the complete roster](rules.md#7-jinn-collection-and-the-retained-roster) for the authoritative effects, rarities and established voice lines. Keep characters and portraits original.
 
-## Three separate concepts
+Jinn persist during the match while equipped. If all slots are full, replace an equipped Jinn or release the revealed one. Exclude equipped duplicates and keep once-per-match use spent through replacement/reacquisition. No separate unequipped inventory or account-wide progression is specified.
 
-Use these distinctions when discussing the design; their precise mechanics are still open:
+Newly acquired Jinn become active from the following turn, including a Royal Flush bonus turn, without retroactive effects. Amira and Rakhim retain checker targets through hits and exchanges; retarget at the next own turn after their checker bears off. Malik skips the next two own turns after shielding. Basim discards his unchosen revealed card.
 
-- **Lamp:** the mystery reward the player can open or rub.
-- **Jinn:** the collectible modifier revealed by a lamp.
-- **Poker power:** the effect activated by a card hand, subject to the baseline one-power-per-turn rule.
+Retain passive, triggered and activated abilities exactly as established. Sahira and Mazin remain once-per-match abilities; the phrase 'passive effects while equipped' in the Bazaar proposal does not remove them. Resolve replacement effects before ordinary effects and simultaneous triggers in left-to-right equipped-slot order.
 
-Do not silently replace every card power or physical Joker card with a Jinn. Clarify whether Jinn are passive, active or a mixture, and whether activations consume the poker-power allowance.
+## Existing builds to investigate
 
-## Legacy abilities to adapt
+- Hadi + Rakhim + Basim: capture/card reward interactions may indirectly amplify Dinar opportunities.
+- Amira + Sirocco + Zafir: reverse manoeuvres and rerolls may create repeated exposure or capture opportunities.
+- Qamar + Sahira + Mazin: card acquisition/refresh may increase high-power hands and extra turns.
 
-These names and effects come from the v0.2 doubles-streak section. They are candidate source material, not a balanced or final Jinn roster. Old streak thresholds are historical only.
+These are synergy hypotheses, not proven strong builds. Record position, opponent strength, acquisition timing and card/Dinar flows when comparing them.
 
-| Legacy bonus | Original effect | Conversion questions |
+## Future economy Jinn — not in the approved roster
+
+These concepts remain candidates for review after the base economy is evaluated. Promoting the Bazaar to current rules does not approve adding them to the initial twelve.
+
+| Candidate | Proposed effect | Personality and flavour |
 | --- | --- | --- |
-| Double Value Target (streak 2) | Mark an opponent checker; hits on it draw one additional card. | When is the target selected? Does the mark survive a hit, bar entry, exchange and bearing off? Can multiple marks stack? |
-| Omni-Move Piece (streak 3) | One checker permanently moves in either direction. | Define bar entry, compulsory moves, home-board eligibility and whether the effect is tied to that checker or its owner. |
-| Mass Card Refresh (streak 4; one-off) | Discard the whole hand and draw seven cards. | Possible consumable or activated Jinn candidate. Define activation timing, deck exhaustion and power budget. |
-| Invincible Piece (streak 5) | One checker is permanently invincible. | Resolve whether opponents may land, blocking strength, effect duration and interaction with temporary shields. |
-| Rampage Piece (streak 6) | A selected checker sends hit opponents to the bar and draws two cards. | Sending a hit checker to the bar is already normal movement. Clarify whether the draw is +2 total or additional to the normal hit reward and any target bonus. |
+| Farid the Usurer | +1 additional Dinar the first time one of your checkers is hit during an opponent's turn. | Greedy merchant profiting from misfortune. “Misfortune is simply an opportunity with poor marketing.” |
+| Layla of the Loose Purse | On your first hit each turn, steal one Dinar from the opponent if available. | Charming, shameless thief. “I prefer to think of it as redistribution.” |
+| Yasmin the Fortune-Seller | Your first Bazaar refresh each visit is free. | Mysterious merchant. “The future is negotiable.” |
 
-The confirmed direction replaces the original permanent streak rewards with collectible abilities. Do not award a permanent legacy power automatically as well as a new lamp without a new explicit decision.
+Do not choose rarities, implement these effects or expand the roster during the base-economy comparison. Farid's farming incentive, Layla's theft/reward ordering and Yasmin's relationship to doubles-earned refreshes would each need rules and tests before adoption.
 
-## Lamp accounting to settle
+## Art and presentation
 
-- Define a qualifying random doubles event: opening roll, natural turn roll, Pair Reroll, Full Reroll and forced opponent rerolls need explicit treatment.
-- Keep cumulative charge and consecutive streak as different state values.
-- Specify charge cost, streak bonuses, carry-over, cap and whether a reward resets either counter.
-- Ensure a single roll is not counted twice as dice are rerolled or modified.
-- Define whether extra turns generate charges and how they affect streaks.
-- Define lamp opening, collection capacity, duplicates, replacement and reveal visibility.
-
-The free starting lamp is a separate setup grant; it should not depend on a player's first roll.
-
-## Future design record
-
-Once agreed, each Jinn needs an ID, display name, personality, source ability, acquisition rule, trigger/activation phase, target, duration, stacking policy, exclusions and visible explanation. Keep flavour text separate from exact rules text.
-
-Distinct personalities and pixel-art portraits are requested. Specific names, art and lore have not yet been approved.
+Each retained Jinn needs an original pixel-art portrait, personality, flavour line and visible activation. Show the exact rule text separately from flavour. Bazaar lamps should make the reveal and replacement decision legible, without disguising rarity probabilities or effect timing. No portraits, merchant character or animations have been created or approved in this documentation change.

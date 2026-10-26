@@ -1,23 +1,27 @@
 # Visual and interaction direction
 
-## Requested direction
+## Established identity
 
-An 8-bit/pixel-art presentation inspired by Balatro's feel, combined with a Middle Eastern fantasy atmosphere. Jinn replace the role of collectible personality-led modifiers, with distinct characters players can recognise and discuss.
+Original low-resolution pixel art, expressive animation and playful presentation inspired by Balatro's atmosphere, with Arabian Nights and Middle Eastern fantasy influences. Use indigo, burgundy, gold and turquoise, geometric ornament, magical oil lamps and distinctive Jinn. Create original artwork, names, interface elements and sound; do not reproduce Balatro assets or characters.
 
-Create original artwork, names, interface elements and sound. No assets or character designs have been approved or added yet.
+## Main game
 
-## Suggested interface to review
+Keep the backgammon board, dice, playing cards, three Jinn slots, Dinar balance and Bazaar progress legible together. The old free-lamp doubles meter must not remain labelled as the current acquisition system.
 
-- Keep the board, dice, hand, collected Jinn and lamp/charge progress visible together where space permits.
-- Explain legal moves and blocked actions clearly before the player commits.
-- Show a power's selected targets and resulting dice before confirming it.
-- Distinguish a natural roll from dice modified by a power; show why doubles did or did not qualify for a lamp.
-- Make shields, marked checkers, movement modifiers and effect expiry visible on the board.
-- Provide an event history that explains card draws, discards, lamp awards and Jinn triggers.
-- Show both the poker hand and the exact power it would activate.
+Show original versus effective dice and explain why a roll did or did not qualify for rewards. Show legal moves, selected power/targets, shields, marked/enhanced checkers, effect expiry and a readable event history. Capture feedback should distinguish the hitter's +1 Dinar, the hit player's +2 Dinars, the checker going to the bar and the card consequences.
 
-These interface ideas follow from the rules needs; they are proposals for a later design pass. Board arrangement, typography, palette, Jinn portraits, animation and sound remain open.
+Prioritise desktop and tablet landscape, mouse/keyboard/touch, reduced motion, controllable audio and readable labels. Hot-seat play needs a handover view to conceal private cards. Phone layouts are later work.
 
-## Technical choice remains open
+## The Jinn Bazaar
 
-The earlier discussion mentioned Three.js as a possibility. No rendering library or game framework is selected. Choose after the rules and target devices are agreed, with a small prototype that proves board interaction and readability.
+The Bazaar is the current game's magical marketplace, not a conventional shop screen. Use ornate oil lamps, animated smoke/glow, distinct Copper/Enchanted/Royal designs, an original mysterious merchant and satisfying currency/reveal feedback. The merchant's identity and final artwork are not approved yet.
+
+Present prices, balance, pending visit timing and the exact benefits available before a purchase. Make spending/saving and replacement/release choices clear. Reveal Jinn with personality and visible rarity; do not confuse a lamp type with the rarity actually revealed. Explain why an upgrade or discount was consumed.
+
+Keep visits brief and optional where the eventual visit rules permit; preview the approach to a visit from the board. Precisely when shopping interrupts play remains a rule decision, not an animation choice. A refresh control must not be designed around an invented shop inventory; agree what changes first.
+
+No visual mock-up, asset set, animation or game UI is implemented by this documentation update. Griff reviews the art direction before full asset production.
+
+## Implementation direction
+
+The previously approved stack is an independent TypeScript rules engine with Phaser 4.2.1/Vite presentation and native HTML menus/accessibility controls. Keep one authoritative engine state. Scenes, sound and animation display its events and must not determine results. See [the development plan](development-plan.md) for the staged implementation and test gates.
