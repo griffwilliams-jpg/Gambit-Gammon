@@ -6,6 +6,7 @@
  */
 
 import { chooseBotAction, createBot, type BotLevel } from '../ai/bot.js';
+import type { FarmingIntensity } from '../ai/planner.js';
 import {
   JINN_BY_ID,
   RULES_V0_4,
@@ -202,6 +203,17 @@ export function meanInterval(values: readonly number[]): Interval {
   return { mean, low: mean - half, high: mean + half };
 }
 
+/** Wilson 95% interval for a percentage from 0/100 outcomes (stays within 0–100). */
+export function rateInterval(outcomes: readonly number[]): Interval {
+  const n = outcomes.length;
+  if (n === 0) return { mean: 0, low: 0, high: 0 };
+  const p = outcomes.filter((x) => x > 0).length / n;
+  const z = 1.96;
+  const centre = (p + (z * z) / (2 * n)) / (1 + (z * z) / n);
+  const half = (z * Math.sqrt((p * (1 - p)) / n + (z * z) / (4 * n * n))) / (1 + (z * z) / n);
+  return { mean: p * 100, low: Math.max(0, centre - half) * 100, high: Math.min(1, centre + half) * 100 };
+}
+
 /** Per-seed differences `a - b` for a metric, with a 95% interval. */
 export function pairedDifference(a: readonly GameRecord[], b: readonly GameRecord[], metric: (r: GameRecord) => number): Interval {
   const bySeed = new Map(b.map((r) => [r.seed, r]));
@@ -242,7 +254,7 @@ export function summarise(results: Record<EconomyLabel, GameRecord[]>, economies
   }
   const rate = (records: GameRecord[], won: (r: GameRecord) => boolean) => {
     const decided = records.filter((r) => r.winner !== null);
-    return meanInterval(decided.map((r) => (won(r) ? 100 : 0)));
+    return rateInterval(decided.map((r) => (won(r) ? 100 : 0)));
   };
   lines.push(`| Starter win rate (%) | ${economies.map((e) => interval(rate(results[e], (r) => r.winner === r.starter), 1)).join(' | ')} |`);
   lines.push(`| White win rate (%) | ${economies.map((e) => interval(rate(results[e], (r) => r.winner === 'white'), 1)).join(' | ')} |`);
@@ -259,4 +271,181 @@ export function summarise(results: Record<EconomyLabel, GameRecord[]>, economies
     paired.push(`| Same winner as ${base} on the same seed | ${fmt(sameWinner * 100, 1)}% |`, '');
   }
   return [...lines, '', ...paired].join('\n');
+}
+
+// ---------------------------------------------------------------------------
+// Policy matchups (the development plan's exploit-seeking farming test)
+
+export interface SideStats {
+  readonly dinarsEarned: number;
+  readonly hitsMade: number;
+  readonly hitsReceived: number;
+  readonly lampsBought: number;
+  readonly legendaryRevealed: number;
+  /** Most times any single checker of this side was hit (repeat-exposure measure). */
+  readonly maxHitsOnOneChecker: number;
+  readonly pipsAtEnd: number;
+}
+
+export interface MatchupRecord {
+  readonly seed: string;
+  readonly economy: EconomyLabel;
+  /** The side playing the policy under test. */
+  readonly testSide: PlayerId;
+  readonly winner: PlayerId | null;
+  readonly turns: number;
+  readonly test: SideStats;
+  readonly opponent: SideStats;
+}
+
+export function playMatchup(
+  seed: string,
+  economy: EconomyLabel,
+  testSide: PlayerId,
+  testLevel: BotLevel,
+  opponentLevel: BotLevel = 'planner',
+  turnCap = 2000,
+  farmingIntensity: FarmingIntensity = 'maximal',
+): MatchupRecord {
+  const rules = rulesFor(economy);
+  let state = createGame({ seed, rules });
+  const other: PlayerId = testSide === 'white' ? 'black' : 'white';
+  const options = { hitPlayerDinars: rules.economy.hitPlayerDinars, farmingIntensity };
+  const bots = {
+    [testSide]: createBot(testSide, `${seed}/${testSide}`, testLevel, options),
+    [other]: createBot(other, `${seed}/${other}`, opponentLevel, options),
+  } as Record<PlayerId, ReturnType<typeof createBot>>;
+
+  const blank = () => ({ dinarsEarned: 0, hitsMade: 0, hitsReceived: 0, lampsBought: 0, legendaryRevealed: 0 });
+  const stats: Record<PlayerId, ReturnType<typeof blank>> = { white: blank(), black: blank() };
+  const hitsPerChecker = new Map<string, number>();
+
+  while (state.phase.kind !== 'finished' && state.turnNumber <= turnCap) {
+    const actor = getLegalActions(state)[0]!.player;
+    const result = applyAction(state, chooseBotAction(bots[actor], getObservation(state, actor)));
+    if (!result.ok) throw new Error(`Simulation chose an illegal action in ${seed}: ${result.message}`);
+    state = result.state;
+    for (const event of result.events) {
+      if (event.type === 'checker-hit') {
+        stats[event.player].hitsMade += 1;
+        stats[event.player === 'white' ? 'black' : 'white'].hitsReceived += 1;
+        hitsPerChecker.set(event.checkerId, (hitsPerChecker.get(event.checkerId) ?? 0) + 1);
+      } else if (event.type === 'dinars-awarded') stats[event.player].dinarsEarned += event.amount;
+      else if (event.type === 'lamp-bought') stats[event.player].lampsBought += 1;
+      else if (event.type === 'jinn-revealed' && event.lamp !== 'starting' && JINN_BY_ID[event.jinn].rarity === 'legendary') {
+        stats[event.player].legendaryRevealed += 1;
+      }
+    }
+  }
+  const side = (p: PlayerId): SideStats => ({
+    ...stats[p],
+    maxHitsOnOneChecker: Math.max(0, ...[...hitsPerChecker].filter(([id]) => id.startsWith(p)).map(([, n]) => n)),
+    pipsAtEnd: getObservation(state, p).players[p].pipCount,
+  });
+  return {
+    seed,
+    economy,
+    testSide,
+    winner: state.phase.kind === 'finished' ? state.phase.winner : null,
+    turns: state.turnNumber,
+    test: side(testSide),
+    opponent: side(other),
+  };
+}
+
+export interface MatchupOptions {
+  readonly games: number;
+  readonly seedPrefix?: string;
+  readonly economies?: readonly EconomyLabel[];
+  readonly testLevel: BotLevel;
+  readonly opponentLevel?: BotLevel;
+  readonly farmingIntensity?: FarmingIntensity;
+}
+
+/** The test side alternates by seed so seat and first-move effects cancel out. */
+export function runMatchups(options: MatchupOptions): Record<EconomyLabel, MatchupRecord[]> {
+  const economies = options.economies ?? ['B', 'C'];
+  const prefix = options.seedPrefix ?? 'farm';
+  const results = { A: [], B: [], C: [] } as Record<EconomyLabel, MatchupRecord[]>;
+  for (let i = 0; i < options.games; i++) {
+    const seed = `${prefix}-${i}`;
+    const testSide: PlayerId = i % 2 === 0 ? 'white' : 'black';
+    for (const economy of economies) {
+      results[economy].push(playMatchup(seed, economy, testSide, options.testLevel, options.opponentLevel, 2000, options.farmingIntensity));
+    }
+  }
+  return results;
+}
+
+const testWon = (r: MatchupRecord) => (r.winner === r.testSide ? 100 : 0);
+
+export function summariseMatchups(
+  test: Record<EconomyLabel, MatchupRecord[]>,
+  control: Record<EconomyLabel, MatchupRecord[]>,
+  economies: readonly EconomyLabel[] = ['B', 'C'],
+): string {
+  const decided = (records: MatchupRecord[]) => records.filter((r) => r.winner !== null);
+  const rows: [string, (r: MatchupRecord) => number, number][] = [
+    ['Dinars earned', (r) => r.test.dinarsEarned, 2],
+    ['Hits received', (r) => r.test.hitsReceived, 2],
+    ['Hits made', (r) => r.test.hitsMade, 2],
+    ['Lamps bought', (r) => r.test.lampsBought, 2],
+    ['Legendary Jinn from purchases', (r) => r.test.legendaryRevealed, 2],
+    ['Most hits on one checker', (r) => r.test.maxHitsOnOneChecker, 2],
+    ['Pips left at the end', (r) => r.test.pipsAtEnd, 1],
+  ];
+  const opp: [string, (r: MatchupRecord) => number, number][] = rows.map(([label, metric, d]) => [
+    label,
+    (r: MatchupRecord) => metric({ ...r, test: r.opponent }),
+    d,
+  ]);
+  const lines: string[] = [];
+  lines.push(`| Measure (mean, 95% CI) | ${economies.map((e) => `Farmer, ${e} | Planner opponent, ${e}`).join(' | ')} |`);
+  lines.push(`| --- | ${economies.map(() => '--- | ---').join(' | ')} |`);
+  for (let i = 0; i < rows.length; i++) {
+    const [label, metric, digits] = rows[i]!;
+    const [, oppMetric] = opp[i]!;
+    lines.push(`| ${label} | ${economies.map((e) => `${interval(meanInterval(test[e].map(metric)), digits)} | ${interval(meanInterval(test[e].map(oppMetric)), digits)}`).join(' | ')} |`);
+  }
+  lines.push('');
+  lines.push(`| Win rate of the test side (%) | ${economies.map((e) => `Economy ${e}`).join(' | ')} |`);
+  lines.push(`| --- | ${economies.map(() => '---').join(' | ')} |`);
+  lines.push(`| Farmer vs planner | ${economies.map((e) => interval(rateInterval(decided(test[e]).map(testWon)), 1)).join(' | ')} |`);
+  lines.push(`| Control: planner vs planner, same seeds and seats | ${economies.map((e) => interval(rateInterval(decided(control[e]).map(testWon)), 1)).join(' | ')} |`);
+  lines.push(`| Turns per game (farmer matches) | ${economies.map((e) => interval(meanInterval(test[e].map((r) => r.turns)), 1)).join(' | ')} |`);
+  lines.push(`| Turns per game (control) | ${economies.map((e) => interval(meanInterval(control[e].map((r) => r.turns)), 1)).join(' | ')} |`);
+  lines.push(`| Capped (inconclusive) games, farmer / control | ${economies.map((e) => `${test[e].filter((r) => r.winner === null).length} / ${control[e].filter((r) => r.winner === null).length}`).join(' | ')} |`);
+  if (economies.length >= 2) {
+    const [a, b] = economies as [EconomyLabel, EconomyLabel];
+    const bySeed = new Map(test[a].map((r) => [r.seed, r]));
+    const diffs = test[b].filter((r) => bySeed.has(r.seed)).map((r) => testWon(r) - testWon(bySeed.get(r.seed)!));
+    lines.push('');
+    lines.push(`Paired by seed, farmer win rate ${b} minus ${a}: ${interval(meanInterval(diffs), 1)} percentage points.`);
+  }
+  return lines.join('\n');
+}
+
+/** One row per farming intensity: win rate, income and cost, under each economy. */
+export function summariseIntensities(
+  byIntensity: readonly { intensity: FarmingIntensity; results: Record<EconomyLabel, MatchupRecord[]> }[],
+  control: Record<EconomyLabel, MatchupRecord[]>,
+  economies: readonly EconomyLabel[] = ['B', 'C'],
+): string {
+  const decided = (records: MatchupRecord[]) => records.filter((r) => r.winner !== null);
+  const lines: string[] = [];
+  lines.push(`| Policy | ${economies.map((e) => `Win % (${e}) | Dinars, farmer vs opponent (${e}) | Hits received (${e})`).join(' | ')} |`);
+  lines.push(`| --- | ${economies.map(() => '--- | --- | ---').join(' | ')} |`);
+  const row = (label: string, results: Record<EconomyLabel, MatchupRecord[]>) =>
+    `| ${label} | ${economies
+      .map((e) => {
+        const records = results[e];
+        const win = interval(rateInterval(decided(records).map(testWon)), 1);
+        const dinars = `${fmt(meanInterval(records.map((r) => r.test.dinarsEarned)).mean, 1)} vs ${fmt(meanInterval(records.map((r) => r.opponent.dinarsEarned)).mean, 1)}`;
+        const hits = fmt(meanInterval(records.map((r) => r.test.hitsReceived)).mean, 1);
+        return `${win} | ${dinars} | ${hits}`;
+      })
+      .join(' | ')} |`;
+  lines.push(row('Control (standard planner)', control));
+  for (const { intensity, results } of byIntensity) lines.push(row(`Farmer: ${intensity}`, results));
+  return lines.join('\n');
 }

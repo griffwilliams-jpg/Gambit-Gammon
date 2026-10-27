@@ -17,7 +17,33 @@ import type { Checker, GameAction, Observation } from '../engine/index.js';
 type MoveAction = Extract<GameAction, { type: 'move-checker' }>;
 type PowerAction = Extract<GameAction, { type: 'play-power' }>;
 
+/**
+ * How the planner values an exposed own blot. Standard play penalises each
+ * direct shot. Farming styles, exploit-seeking test policies from the
+ * development plan, penalise shots less or reward them for the Dinars a hit
+ * would pay.
+ */
+export interface PlanStyle {
+  readonly kind: 'standard' | 'farming';
+  /** Score per direct shot at an own blot (standard: -3). */
+  readonly shotValue: number;
+  /** Extra penalty per exposed blot regardless of shots (standard only). */
+  readonly blotPenalty: boolean;
+}
+
+export const STANDARD_STYLE: PlanStyle = { kind: 'standard', shotValue: -3, blotPenalty: true };
+
+export type FarmingIntensity = 'cautious' | 'neutral' | 'eager' | 'maximal';
+export const FARMING_INTENSITIES: readonly FarmingIntensity[] = ['cautious', 'neutral', 'eager', 'maximal'];
+
+/** Farming styles priced from the Dinars the hit player receives (Economy B: 2). */
+export function farmingStyle(hitPlayerDinars: number, intensity: FarmingIntensity = 'maximal'): PlanStyle {
+  const shotValue = { cautious: -1, neutral: 0, eager: hitPlayerDinars, maximal: 2 * hitPlayerDinars }[intensity];
+  return { kind: 'farming', shotValue, blotPenalty: false };
+}
+
 interface Board {
+  style: PlanStyle;
   position: Position;
   /** Opponent blots protected by a shield: blocked in the search, but still one checker. */
   shielded: Set<number>;
@@ -30,7 +56,7 @@ interface Board {
 /** Score adjustment a power must beat, per card spent. */
 const CARD_VALUE = 2;
 
-function boardFrom(observation: Observation): Board {
+function boardFrom(observation: Observation, style: PlanStyle): Board {
   const me = observation.viewer;
   const position = positionFor(observation.checkers as Checker[], me);
   const shielded = new Set<number>();
@@ -49,6 +75,7 @@ function boardFrom(observation: Observation): Board {
   }
   const theirs = observation.checkers.filter((c) => c.owner !== me);
   return {
+    style,
     position,
     shielded,
     ownShielded,
@@ -84,6 +111,7 @@ export function evaluatePosition(
   ownShielded: Set<number>,
   opponentBar: number,
   opponentOff: number,
+  style: PlanStyle = STANDARD_STYLE,
 ): number {
   const own = position.own;
   const opp = position.opponent.map((count, i) => (shielded.has(i) && count >= 1 ? 1 : count));
@@ -111,7 +139,7 @@ export function evaluatePosition(
         if (from >= 1 && opp[from]! > 0) shots += 1;
       }
       if (opponentBar > 0 && point <= 6) shots += 1;
-      score -= shots * 3 + (point <= 6 ? 2 : 1);
+      score += shots * style.shotValue - (style.blotPenalty ? (point <= 6 ? 2 : 1) : 0);
     }
   }
   // Primes block escaping checkers.
@@ -152,7 +180,7 @@ export function planTurn(board: Board, context: MoveContext, remaining: readonly
     const steps = budget-- > 0 ? legalSteps(position, dice, ctx) : [];
     let best: number;
     if (steps.length === 0) {
-      best = evaluatePosition(position, board.shielded, board.ownShielded, board.opponentBar + hits, board.opponentOff);
+      best = evaluatePosition(position, board.shielded, board.ownShielded, board.opponentBar + hits, board.opponentOff, board.style);
     } else {
       best = -Infinity;
       for (const step of steps) {
@@ -167,7 +195,7 @@ export function planTurn(board: Board, context: MoveContext, remaining: readonly
 
   const steps = legalSteps(board.position, remaining, context);
   if (steps.length === 0) {
-    return { value: evaluatePosition(board.position, board.shielded, board.ownShielded, board.opponentBar, board.opponentOff), first: null };
+    return { value: evaluatePosition(board.position, board.shielded, board.ownShielded, board.opponentBar, board.opponentOff, board.style), first: null };
   }
   let plan: Plan = { value: -Infinity, first: null };
   for (const step of steps) {
@@ -198,10 +226,10 @@ export interface PlannedMove {
 }
 
 /** Chooses the next move (or a worthwhile power) for a move decision, or null if none applies. */
-export function planMove(observation: Observation): PlannedMove | null {
+export function planMove(observation: Observation, style: PlanStyle = STANDARD_STYLE): PlannedMove | null {
   const turn = observation.turn;
   if (!turn?.dice || observation.pending?.kind !== 'move') return null;
-  const board = boardFrom(observation);
+  const board = boardFrom(observation, style);
   const remaining = turn.dice.remaining;
   const current = planTurn(board, contextFrom(observation), remaining);
 

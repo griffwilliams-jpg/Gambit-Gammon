@@ -18,19 +18,32 @@ import {
   type Rarity,
 } from '../engine/index.js';
 import { nextUint32, seedStream, type RngState } from '../engine/rng.js';
-import { planMove } from './planner.js';
+import { STANDARD_STYLE, farmingStyle, planMove, type FarmingIntensity, type PlanStyle } from './planner.js';
 
-/** 'planner' searches whole turns; 'basic' picks each movement greedily. */
-export type BotLevel = 'basic' | 'planner';
+/**
+ * 'planner' searches whole turns; 'basic' picks each movement greedily.
+ * 'farmer' is a test policy: the planner's search, but it seeks to have its
+ * blots hit for Dinars. It is for balance testing, not a play difficulty.
+ */
+export type BotLevel = 'basic' | 'planner' | 'farmer';
+
+export interface BotOptions {
+  /** Dinars the hit player receives under the rules in play (farmer only; default 2, Economy B). */
+  readonly hitPlayerDinars?: number;
+  /** How hard the farmer seeks hits (farmer only; default 'maximal'). */
+  readonly farmingIntensity?: FarmingIntensity;
+}
 
 export interface Bot {
   readonly player: PlayerId;
   readonly level: BotLevel;
+  readonly style: PlanStyle;
   rng: RngState;
 }
 
-export function createBot(player: PlayerId, seed: string, level: BotLevel = 'planner'): Bot {
-  return { player, level, rng: seedStream(seed, `bot-${player}`) };
+export function createBot(player: PlayerId, seed: string, level: BotLevel = 'planner', options: BotOptions = {}): Bot {
+  const style = level === 'farmer' ? farmingStyle(options.hitPlayerDinars ?? 2, options.farmingIntensity) : STANDARD_STYLE;
+  return { player, level, style, rng: seedStream(seed, `bot-${player}`) };
 }
 
 export function chooseBotAction(bot: Bot, observation: Observation): GameAction {
@@ -65,6 +78,7 @@ export function chooseBotAction(bot: Bot, observation: Observation): GameAction 
     case 'choose-basim-card':
       return best(bot, actions, (a) => (a.type === 'choose-basim-card' ? cardValue(a.cardId) : 0));
     case 'offer-malik':
+      if (bot.level === 'farmer') return pick(actions, (a) => a.type === 'use-malik' && a.checkerId === null);
       return best(bot, actions, (a) => (a.type === 'use-malik' && a.checkerId ? 1 + threatOn(observation, a.checkerId) : 0));
     case 'bazaar': {
       const prices = { copper: 4, enchanted: 7, royal: 12 } as const;
@@ -98,8 +112,8 @@ function chooseMove(bot: Bot, observation: Observation): GameAction {
 
   const moves = actions.filter((a) => a.type === 'move-checker');
   const powers = actions.filter((a) => a.type === 'play-power');
-  if (moves.length === 0 && bot.level === 'planner') {
-    const planned = planMove(observation);
+  if (moves.length === 0 && bot.level !== 'basic') {
+    const planned = planMove(observation, bot.style);
     if (planned) return planned.action;
   }
   if (moves.length === 0) {
@@ -118,14 +132,15 @@ function chooseMove(bot: Bot, observation: Observation): GameAction {
 
   // Shield the most threatened blot before moving, if a Flush is in hand.
   const flushes = powers.filter((a) => a.type === 'play-power' && a.params.power === 'flush');
-  if (flushes.length > 0) {
+  // A farming policy wants its blots hit, so it never shields them.
+  if (flushes.length > 0 && bot.level !== 'farmer') {
     const shield = best(bot, flushes, (a) => (a.type === 'play-power' && a.params.power === 'flush' ? threatOn(observation, a.params.checkerId) : 0));
     if (shield.type === 'play-power' && shield.params.power === 'flush' && threatOn(observation, shield.params.checkerId) >= 2) {
       return shield;
     }
   }
-  if (bot.level === 'planner') {
-    const planned = planMove(observation);
+  if (bot.level !== 'basic') {
+    const planned = planMove(observation, bot.style);
     if (planned) return planned.action;
   }
   return best(bot, moves, (a) => (a.type === 'move-checker' ? scoreAfterMove(observation, a) : 0));
