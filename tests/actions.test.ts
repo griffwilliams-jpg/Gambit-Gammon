@@ -10,6 +10,12 @@ import {
 } from '../src/engine/index.js';
 import { apply, deepFreeze, playOut, scenario } from './helpers.js';
 
+function canonical(value: unknown): string {
+  return JSON.stringify(value, (_key, inner: unknown) =>
+    inner && typeof inner === 'object' && !Array.isArray(inner) ? Object.fromEntries(Object.entries(inner).sort(([x], [y]) => (x < y ? -1 : x > y ? 1 : 0))) : inner,
+  );
+}
+
 function expectRejectedUnchanged(state: GameState, action: GameAction, code: string): void {
   const snapshot = JSON.stringify(state);
   const result = applyAction(deepFreeze(state), action);
@@ -108,7 +114,8 @@ describe('rejected actions change neither state nor randomness', () => {
         const state = playOut(createGame({ seed: `prop-${seed}` }), seed, steps);
         const snapshot = JSON.stringify(state);
         const result = applyAction(state, action);
-        const legal = getLegalActions(state).some((a) => JSON.stringify(a) === JSON.stringify(action));
+        // Compare with sorted keys, as the engine does: property order is not meaningful.
+        const legal = getLegalActions(state).some((a) => canonical(a) === canonical(action));
         if (result.ok) {
           expect(legal).toBe(true);
         } else {
