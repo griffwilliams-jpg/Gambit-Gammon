@@ -4,7 +4,7 @@ A backgammon and poker game with collectible Jinn and a magical marketplace. Ris
 
 **Current rules: v0.4 — the Dinar-funded Jinn Bazaar.** The current default awards +1 Dinar for hitting and +2 for being hit. The Bazaar replaces additional free lamps from doubles. Its prices and rewards are provisional balance values, and the remaining shop rules were settled on 26 October 2026.
 
-**Current build status:** playable v1 with placeholder art. You can play the full v0.4 rules in a browser, against the computer or with two players on one screen. That covers all ten poker powers, all twelve Jinn, Dinars and the Jinn Bazaar. The art is simple shapes in the approved palette, not the planned pixel art, and there is no sound. No balance simulation or human playtest has been run. Details the rules leave open are recorded for review in [implementation assumptions](docs/implementation-assumptions.md).
+**Current build status:** playable v1 with placeholder art. You can play the full v0.4 rules in a browser, against the computer or with two players on one screen. That covers all ten poker powers, all twelve Jinn, Dinars and the Jinn Bazaar. The art is simple shapes in the approved palette, not the planned pixel art, and there is no sound. A first economy simulation has been run (see below); no human playtest has. Details the rules leave open are recorded for review in [implementation assumptions](docs/implementation-assumptions.md).
 
 ## Play it
 
@@ -37,6 +37,7 @@ That runs the type check, the tests and the build, stopping at the first failure
 | `npm run typecheck` | Strict TypeScript check of the engine, computer player, interface and tests. |
 | `npm test` | Runs the Vitest suite once (about 100 tests, including 200 seeded random games and bot-vs-random games). |
 | `npm run test:e2e` | Playwright browser tests: loading, the opening, computer turns, clicking moves on the board, keyboard use, two-player handover, autosave and the Bazaar. Uses your installed Google Chrome; without Chrome, run `npx playwright install chromium` once and set `PW_BROWSER=bundled`. |
+| `npm run simulate -- --games 1000` | Plays the same seeds under Economies B, A and C with the computer on both sides and prints a markdown comparison. |
 | `npm run build` | Compiles the engine and computer player to `dist/` (with no DOM or Node types, so they can't depend on a browser), then builds the web game to `dist-web/`. |
 | `npm run preview` | Serves the built web game. |
 
@@ -59,6 +60,7 @@ That runs the type check, the tests and the build, stopping at the first failure
 - [Remaining decisions](docs/open-decisions.md): resolved shop rules and open balance questions.
 - [Implementation assumptions](docs/implementation-assumptions.md): details the engine had to choose, for Griff to confirm or overrule.
 - [Jinn design](docs/jinn-design.md): approved roster, retained activations and future candidates.
+- [Economy simulation, 27 October 2026](docs/simulations/2026-10-27-economy-abc.md): first B vs A vs C comparison (illustrative).
 - [Development and testing plan](docs/development-plan.md): architecture, staged work, Bazaar assessment and v0.3 comparisons.
 - [Visual direction](docs/design-direction.md): original pixel art, board, lamps and Bazaar presentation.
 - [Original references](reference/README.md): preserved source JSON and rulebook.
