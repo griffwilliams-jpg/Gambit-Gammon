@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { meanInterval, pairedDifference, playRecordedGame, runComparison, summarise } from '../src/sim/economy.js';
+import { meanInterval, pairedDifference, playMatchup, playRecordedGame, rateInterval, runComparison, summarise } from '../src/sim/economy.js';
 
 describe('economy comparison tool', () => {
   it('is reproducible for the same seed and economy', () => {
@@ -28,5 +28,31 @@ describe('economy comparison tool', () => {
     const a = playRecordedGame('sim-pair', 'C');
     const b = playRecordedGame('sim-pair', 'A');
     expect(pairedDifference([a], [b], (r) => r.turns).mean).toBe(a.turns - b.turns);
+  });
+});
+
+describe('farming test policy', () => {
+  it('seeks more hits than the standard planner on the same seeds', () => {
+    const seeds = ['farm-t-0', 'farm-t-1', 'farm-t-2', 'farm-t-3'];
+    const received = (level: 'planner' | 'farmer') =>
+      seeds.reduce((sum, seed, i) => sum + playMatchup(seed, 'B', i % 2 ? 'black' : 'white', level).test.hitsReceived, 0);
+    expect(received('farmer')).toBeGreaterThan(received('planner'));
+  }, 60_000);
+
+  it('records consistent per-side accounting', () => {
+    const r = playMatchup('farm-acct', 'C', 'white', 'farmer');
+    // Every hit made by one side is a hit received by the other.
+    expect(r.test.hitsMade).toBe(r.opponent.hitsReceived);
+    expect(r.test.hitsReceived).toBe(r.opponent.hitsMade);
+    // Economy C: +1 per hit made, +3 per hit received.
+    expect(r.test.dinarsEarned).toBe(r.test.hitsMade + 3 * r.test.hitsReceived);
+    expect(r.winner === null || r.test.pipsAtEnd === 0 || r.opponent.pipsAtEnd === 0).toBe(true);
+  }, 60_000);
+
+  it('keeps win-rate intervals within 0 to 100%', () => {
+    const all = rateInterval([0, 0, 0, 0]);
+    expect(all.low).toBe(0);
+    expect(all.high).toBeGreaterThan(0);
+    expect(rateInterval([100, 100]).high).toBe(100);
   });
 });
